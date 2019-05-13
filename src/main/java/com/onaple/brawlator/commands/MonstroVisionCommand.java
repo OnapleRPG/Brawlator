@@ -28,15 +28,26 @@ public class MonstroVisionCommand implements CommandExecutor {
             return CommandResult.empty();
         }
         Player player = (Player)src;
+        Optional<Boolean> value = args.getOne("value");
 
         SpawnerAction spawnerAction = Brawlator.getSpawnerAction();
-        boolean playerHasVisionEnabled = spawnerAction.isPlayerRegisteredToVision(player);
-        if (playerHasVisionEnabled) {
-            spawnerAction.unregisterPlayerToVision(player);
-            player.sendMessage(Text.of("Monstrovision disabled."));
+        if (value.isPresent()) {
+            if (value.get()) {
+                spawnerAction.registerPlayerToVision(player);
+                player.sendMessage(Text.of("Monstrovision enabled."));
+            } else {
+                spawnerAction.unregisterPlayerToVision(player);
+                player.sendMessage(Text.of("Monstrovision disabled."));
+            }
         } else {
-            spawnerAction.registerPlayerToVision(player);
-            player.sendMessage(Text.of("Monstrovision enabled."));
+            boolean playerHasVisionEnabled = spawnerAction.isPlayerRegisteredToVision(player);
+            if (playerHasVisionEnabled) {
+                spawnerAction.unregisterPlayerToVision(player);
+                player.sendMessage(Text.of("Monstrovision disabled."));
+            } else {
+                spawnerAction.registerPlayerToVision(player);
+                player.sendMessage(Text.of("Monstrovision enabled."));
+            }
         }
 
         return CommandResult.success();
