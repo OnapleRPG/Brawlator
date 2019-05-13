@@ -1,4 +1,4 @@
-package com.onaple.brawlator;
+package com.onaple.brawlator.actions;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
