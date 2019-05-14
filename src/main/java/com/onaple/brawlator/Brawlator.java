@@ -35,7 +35,8 @@ import java.util.concurrent.TimeUnit;
 public class Brawlator {
     private static final String BRAWLATOR_PERMISSION = "brawlator.command";
     private static final String SPAWNER_PERMISSION = "brawlator.command.spawner";
-    private static final String MONSTROVISION_PERMISSION = "brawlator.command.monstrovision";
+    private static final String VISION_PERMISSION = "brawlator.command.vision";
+    private static final String INVOKE_PERMISSION = "brawlator.command.invoke";
 
     private static Logger logger;
     @Inject
@@ -69,6 +70,7 @@ public class Brawlator {
 
         CommandSpec invokeCommand = CommandSpec.builder()
                 .description(Text.of("Invoke a monster"))
+                .permission(INVOKE_PERMISSION)
                 .arguments(
                         GenericArguments.onlyOne(GenericArguments.string(Text.of("name"))),
                         GenericArguments.optional(GenericArguments.vector3d(Text.of("position")))
@@ -77,7 +79,7 @@ public class Brawlator {
 
         CommandSpec monstrovisionCommand = CommandSpec.builder()
                 .description(Text.of("Enable or disable the monstrovision, to be able to see Brawlator spawners"))
-                .permission(MONSTROVISION_PERMISSION)
+                .permission(VISION_PERMISSION)
                 .arguments(
                         GenericArguments.optional(GenericArguments.bool(Text.of("value")))
                 )
