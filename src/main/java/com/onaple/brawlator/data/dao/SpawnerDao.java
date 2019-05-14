@@ -4,6 +4,7 @@ import com.flowpowered.math.vector.Vector3i;
 import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.data.beans.SpawnerBean;
 import com.onaple.brawlator.data.handlers.DatabaseHandler;
+import com.onaple.brawlator.utils.SpawnerBuilder;
 
 import javax.naming.ServiceUnavailableException;
 import java.sql.Connection;
@@ -20,7 +21,7 @@ public class SpawnerDao {
      * Generate database tables if they do not exist
      */
     public static void createTableIfNotExist() {
-        String query = "CREATE TABLE IF NOT EXISTS spawner (id INTEGER PRIMARY KEY, x INT, y INT, z INT, configId INT)";
+        String query = "CREATE TABLE IF NOT EXISTS spawner (id INTEGER PRIMARY KEY, x INT, y INT, z INT, worldName VARCHAR(50), spawnerTypeName VARCHAR(50), monsterName VARCHAR(50))";
         Connection connection = null;
         PreparedStatement statement = null;
         try {
@@ -42,7 +43,7 @@ public class SpawnerDao {
      * @return List of spawners
      */
     public static List<SpawnerBean> getSpawners() {
-        String query = "SELECT id, x, y, z, configId FROM spawner";
+        String query = "SELECT id, x, y, z, worldName, spawnerTypeName, monsterName FROM spawner";
         List<SpawnerBean> spawners = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -52,10 +53,10 @@ public class SpawnerDao {
             statement = connection.prepareStatement(query);
             results = statement.executeQuery();
             while (results.next()) {
-                spawners.add(new SpawnerBean(results.getInt("id"),
+                spawners.add(SpawnerBuilder.buildSpawner(results.getInt("id"),
                         new Vector3i(results.getInt("x"), results.getInt("y"),
-                                results.getInt("z")),
-                        results.getInt("configId")));
+                                results.getInt("z")), results.getString("worldName"),
+                        results.getString("spawnerTypeName"), results.getString("monsterName")));
             }
             statement.close();
         } catch (ServiceUnavailableException e) {
@@ -69,7 +70,7 @@ public class SpawnerDao {
     }
 
     public static List<SpawnerBean> getSpawnersAround(Vector3i position) {
-        String query = "SELECT id, x, y, z, configId FROM spawner WHERE x > ? AND x < ? AND y > ? AND y < ? AND z > ? AND z < ?";
+        String query = "SELECT id, x, y, z, worldName, spawnerTypeName, monsterName FROM spawner WHERE x > ? AND x < ? AND y > ? AND y < ? AND z > ? AND z < ?";
         List<SpawnerBean> spawners = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -85,10 +86,10 @@ public class SpawnerDao {
             statement.setInt(6, position.getZ() + 2);
             results = statement.executeQuery();
             while (results.next()) {
-                spawners.add(new SpawnerBean(results.getInt("id"),
+                spawners.add(SpawnerBuilder.buildSpawner(results.getInt("id"),
                         new Vector3i(results.getInt("x"), results.getInt("y"),
-                                results.getInt("z")),
-                        results.getInt("configId")));
+                                results.getInt("z")), results.getString("worldName"),
+                        results.getString("spawnerTypeName"), results.getString("monsterName")));
             }
             statement.close();
         } catch (ServiceUnavailableException e) {
@@ -106,7 +107,7 @@ public class SpawnerDao {
      * @param spawner Spawner to respawn later
      */
     public static void addSpawner(SpawnerBean spawner) {
-        String query = "INSERT INTO spawner (x, y, z, configId) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO spawner (x, y, z, worldName, spawnerTypeName, monsterName) VALUES (?, ?, ?, ?, ?, ?)";
         Connection connection = null;
         PreparedStatement statement = null;
         try {
@@ -115,7 +116,9 @@ public class SpawnerDao {
             statement.setInt(1, spawner.getPosition().getX());
             statement.setInt(2, spawner.getPosition().getY());
             statement.setInt(3, spawner.getPosition().getZ());
-            statement.setInt(4, spawner.getSpawnerConfigId());
+            statement.setString(4, spawner.getWorldName());
+            statement.setString(5, spawner.getSpawnerTypeName());
+            statement.setString(6, spawner.getMonsterName());
             statement.execute();
             statement.close();
         } catch (ServiceUnavailableException e) {

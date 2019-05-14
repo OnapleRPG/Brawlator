@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -85,7 +86,8 @@ public class Brawlator {
         CommandSpec spawnerCreateCommand = CommandSpec.builder()
                 .description(Text.of("Create a Brawlator spawner"))
                 .arguments(
-                        GenericArguments.onlyOne(GenericArguments.integer(Text.of("spawnerConfigId")))
+                        GenericArguments.onlyOne(GenericArguments.string(Text.of("spawnerType"))),
+                        GenericArguments.onlyOne(GenericArguments.string(Text.of("monsterName")))
                 )
                 .executor(new SpawnerCreateCommand()).build();
 
@@ -105,15 +107,19 @@ public class Brawlator {
                 .permission(BRAWLATOR_PERMISSION)
                 .child(invokeCommand, "invoke")
                 .child(spawnerCommand, "spawner")
-                .child(monstrovisionCommand, "view")
+                .child(monstrovisionCommand, Arrays.asList("view", "vision"))
                 .build();
         Sponge.getCommandManager().register(this, brawlatorCommand, "brawlator");
 
         Task.builder().execute(spawnerAction::showSpawnersParticles)
                 .delay(1, TimeUnit.SECONDS).interval(1, TimeUnit.SECONDS)
                 .name("Task showing spawners particles.").submit(this);
+        Task.builder().execute(spawnerAction::invokeSpawnerMonsters)
+                .delay(5, TimeUnit.SECONDS).interval(5, TimeUnit.SECONDS)
+                .name("Task invoking the monsters on every spawners.").submit(this);
 
         getLogger().info(loadMonsters() + " monsters loaded.");
+        getLogger().info(loadSpawnerTypes() + " spawners types loaded.");
 
         spawnerAction.updateSpawners();
 
@@ -126,6 +132,16 @@ public class Brawlator {
             return ConfigurationHandler.readMonstersConfiguration(ConfigurationHandler.loadConfiguration(configDir + "/brawlator/monsters.conf"));
         } catch (IOException | ObjectMappingException e) {
             getLogger().error("Could not read monsters configuration.");
+            return 0;
+        }
+    }
+
+    private int loadSpawnerTypes() {
+        initDefaultConfig("spawners.conf");
+        try {
+            return ConfigurationHandler.readSpawnerTypesConfiguration(ConfigurationHandler.loadConfiguration(configDir + "/brawlator/spawners.conf"));
+        } catch (IOException | ObjectMappingException e) {
+            getLogger().error("Could not read spawners types configuration.");
             return 0;
         }
     }

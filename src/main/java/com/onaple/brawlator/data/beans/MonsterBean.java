@@ -5,12 +5,6 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
 @ConfigSerializable
 public class MonsterBean {
-
-    /**
-     * Database monster id
-     */
-    @Setting(value="id")
-    private int id;
     /**
      * Monster name displayed above him
      */
@@ -45,9 +39,6 @@ public class MonsterBean {
     public MonsterBean() {
     }
 
-    public int getId() {
-        return id;
-    }
     public String getName() {
         return name;
     }
@@ -61,9 +52,6 @@ public class MonsterBean {
     public double getAttackDamage() { return attackDamage; }
     public int getKnockbackResistance() { return knockbackResistance; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
     public void setName(String name) {
         this.name = name;
     }
@@ -74,13 +62,4 @@ public class MonsterBean {
     public void setSpeed(double speed) { this.speed = speed; }
     public void setAttackDamage(double attackDamage) { this.attackDamage = attackDamage; }
     public void setKnockbackResistance(int knockbackResistance) { this.knockbackResistance = knockbackResistance; }
-
-    public MonsterBean(String name, String type, double hp, double speed, double attackDamage, int knockbackResistance) {
-        this.name = name;
-        this.type = type;
-        this.hp = hp;
-        this.speed = speed;
-        this.attackDamage = attackDamage;
-        this.knockbackResistance = knockbackResistance;
-    }
 }

@@ -13,6 +13,11 @@ import org.spongepowered.api.world.Location;
 import java.util.Optional;
 
 public class MonsterAction {
+    public boolean monsterExists(String monsterName) {
+        Optional<MonsterBean> monsterOptional = ConfigurationHandler.getMonsterList().stream().filter(m -> m.getName().toLowerCase().equals(monsterName.toLowerCase())).findAny();
+        return monsterOptional.isPresent() || Sponge.getRegistry().getType(EntityType.class, monsterName).isPresent();
+    }
+
     public void invokeMonster(Location location, String monsterName) throws EntityTypeNotFoundException, MonsterNotFoundException {
         Optional<MonsterBean> monsterOptional = ConfigurationHandler.getMonsterList().stream().filter(m -> m.getName().toLowerCase().equals(monsterName.toLowerCase())).findAny();
         if (monsterOptional.isPresent()) {
