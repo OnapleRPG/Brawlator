@@ -6,6 +6,7 @@ import com.onaple.brawlator.commands.InvokeCommand;
 import com.onaple.brawlator.commands.ViewCommand;
 import com.onaple.brawlator.commands.SpawnerCreateCommand;
 import com.onaple.brawlator.commands.SpawnerDeleteCommand;
+import com.onaple.brawlator.data.dao.MonsterSpawnedDao;
 import com.onaple.brawlator.data.dao.SpawnerDao;
 import com.onaple.brawlator.data.handlers.ConfigurationHandler;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -15,8 +16,11 @@ import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.Task;
@@ -67,6 +71,7 @@ public class Brawlator {
         monsterAction = new MonsterAction();
 
         SpawnerDao.createTableIfNotExist();
+        MonsterSpawnedDao.createTableIfNotExist();
 
         CommandSpec invokeCommand = CommandSpec.builder()
                 .description(Text.of("Invoke a monster"))
@@ -116,6 +121,9 @@ public class Brawlator {
         Task.builder().execute(spawnerAction::showSpawnersParticles)
                 .delay(1, TimeUnit.SECONDS).interval(1, TimeUnit.SECONDS)
                 .name("Task showing spawners particles.").submit(this);
+        Task.builder().execute(spawnerAction::deleteNonExistingMonsters)
+                .delay(30, TimeUnit.SECONDS).interval(30, TimeUnit.SECONDS)
+                .name("Task deleting non existing monsters spawned from spawner from database").submit(this);
         Task.builder().execute(spawnerAction::invokeSpawnerMonsters)
                 .delay(5, TimeUnit.SECONDS).interval(5, TimeUnit.SECONDS)
                 .name("Task invoking the monsters on every spawners.").submit(this);
@@ -165,5 +173,19 @@ public class Brawlator {
                 }
             }
         }
+    }
+
+    @Listener
+    public void onEntityDeath(DestructEntityEvent.Death event) {
+        MonsterSpawnedDao.deleteMonsterByUuid(event.getTargetEntity().getUniqueId().toString());
+    }
+
+    @Listener
+    public void onServerStop(GameStoppingServerEvent event) {
+        MonsterSpawnedDao.getMonstersSpawned().forEach(monster -> {
+            Sponge.getServer().getWorld(monster.getWorldName()).ifPresent(world -> {
+                world.getEntity(monster.getUuid()).ifPresent(Entity::remove);
+            });
+        });
     }
 }

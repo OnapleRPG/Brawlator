@@ -50,7 +50,7 @@ public class InvokeCommand implements CommandExecutor {
 
         // Invoke monster or handles exception
         try {
-            Brawlator.getMonsterAction().invokeMonster(location, monsterName.get());
+            Brawlator.getMonsterAction().invokeMonster(location, monsterName.get(), -1);
         } catch (MonsterNotFoundException e) {
             src.sendMessage(Text.of("The monster with given name was not found."));
             return CommandResult.empty();

@@ -1,6 +1,8 @@
 package com.onaple.brawlator.actions;
 
 import com.onaple.brawlator.data.beans.MonsterBean;
+import com.onaple.brawlator.data.beans.MonsterSpawnedBean;
+import com.onaple.brawlator.data.dao.MonsterSpawnedDao;
 import com.onaple.brawlator.data.handlers.ConfigurationHandler;
 import com.onaple.brawlator.exceptions.EntityTypeNotFoundException;
 import com.onaple.brawlator.exceptions.MonsterNotFoundException;
@@ -18,7 +20,7 @@ public class MonsterAction {
         return monsterOptional.isPresent() || Sponge.getRegistry().getType(EntityType.class, monsterName).isPresent();
     }
 
-    public void invokeMonster(Location location, String monsterName) throws EntityTypeNotFoundException, MonsterNotFoundException {
+    public void invokeMonster(Location location, String monsterName, int spawnerId) throws EntityTypeNotFoundException, MonsterNotFoundException {
         Optional<MonsterBean> monsterOptional = ConfigurationHandler.getMonsterList().stream().filter(m -> m.getName().toLowerCase().equals(monsterName.toLowerCase())).findAny();
         if (monsterOptional.isPresent()) {
             MonsterBean monster = monsterOptional.get();
@@ -44,6 +46,11 @@ public class MonsterAction {
             }
 
             Entity baseEntity = location.createEntity(entityTypeOptional.get());
+
+            if (spawnerId != -1) {
+                MonsterSpawnedDao.addMonsterSpawned(new MonsterSpawnedBean(spawnerId, baseEntity.getUniqueId(), baseEntity.getWorld().getName()));
+            }
+
             location.spawnEntity(baseEntity);
         }
     }

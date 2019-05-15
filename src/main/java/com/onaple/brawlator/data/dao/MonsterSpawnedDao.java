@@ -1,10 +1,8 @@
 package com.onaple.brawlator.data.dao;
 
-import com.flowpowered.math.vector.Vector3i;
 import com.onaple.brawlator.Brawlator;
-import com.onaple.brawlator.data.beans.SpawnerBean;
+import com.onaple.brawlator.data.beans.MonsterSpawnedBean;
 import com.onaple.brawlator.data.handlers.DatabaseHandler;
-import com.onaple.brawlator.utils.SpawnerBuilder;
 
 import javax.naming.ServiceUnavailableException;
 import java.sql.Connection;
@@ -13,15 +11,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class SpawnerDao {
+public class MonsterSpawnedDao {
     private static String errorDatabasePrefix = "Error while connecting to database : ";
 
     /**
      * Generate database tables if they do not exist
      */
     public static void createTableIfNotExist() {
-        String query = "CREATE TABLE IF NOT EXISTS spawner (id INTEGER PRIMARY KEY, x INT, y INT, z INT, worldName VARCHAR(50), spawnerTypeName VARCHAR(50), monsterName VARCHAR(50))";
+        String query = "CREATE TABLE IF NOT EXISTS monsterSpawned (id INTEGER PRIMARY KEY, spawnerId INTEGER, uuid VARCHAR(50), worldName VARCHAR(50))";
         Connection connection = null;
         PreparedStatement statement = null;
         try {
@@ -32,124 +31,104 @@ public class SpawnerDao {
         } catch (ServiceUnavailableException e) {
             Brawlator.getLogger().error(errorDatabasePrefix.concat(e.getMessage()));
         } catch (SQLException e) {
-            Brawlator.getLogger().error("Error while creating spawners table : " + e.getMessage());
+            Brawlator.getLogger().error("Error while creating spanwed monster table : " + e.getMessage());
         } finally {
             closeConnection(connection, statement, null);
         }
     }
 
     /**
-     * Fetch database to query every spawners
-     * @return List of spawners
+     * Add a monster spawned into database
+     * @param monsterSpawned Monster spawned
      */
-    public static List<SpawnerBean> getSpawners() {
-        String query = "SELECT id, x, y, z, worldName, spawnerTypeName, monsterName FROM spawner";
-        List<SpawnerBean> spawners = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet results = null;
-        try {
-            connection = DatabaseHandler.getDatasource().getConnection();
-            statement = connection.prepareStatement(query);
-            results = statement.executeQuery();
-            while (results.next()) {
-                spawners.add(SpawnerBuilder.buildSpawner(results.getInt("id"),
-                        new Vector3i(results.getInt("x"), results.getInt("y"),
-                                results.getInt("z")), results.getString("worldName"),
-                        results.getString("spawnerTypeName"), results.getString("monsterName")));
-            }
-            statement.close();
-        } catch (ServiceUnavailableException e) {
-            Brawlator.getLogger().error(errorDatabasePrefix.concat(e.getMessage()));
-        } catch (SQLException e) {
-            Brawlator.getLogger().error("Error while fetching spawners : " + e.getMessage());
-        } finally {
-            closeConnection(connection, statement, results);
-        }
-        return spawners;
-    }
-
-    public static List<SpawnerBean> getSpawnersAround(Vector3i position) {
-        String query = "SELECT id, x, y, z, worldName, spawnerTypeName, monsterName FROM spawner WHERE x > ? AND x < ? AND y > ? AND y < ? AND z > ? AND z < ?";
-        List<SpawnerBean> spawners = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet results = null;
-        try {
-            connection = DatabaseHandler.getDatasource().getConnection();
-            statement = connection.prepareStatement(query);
-            statement.setInt(1, position.getX() - 2);
-            statement.setInt(2, position.getX() + 2);
-            statement.setInt(3, position.getY() - 2);
-            statement.setInt(4, position.getY() + 2);
-            statement.setInt(5, position.getZ() - 2);
-            statement.setInt(6, position.getZ() + 2);
-            results = statement.executeQuery();
-            while (results.next()) {
-                spawners.add(SpawnerBuilder.buildSpawner(results.getInt("id"),
-                        new Vector3i(results.getInt("x"), results.getInt("y"),
-                                results.getInt("z")), results.getString("worldName"),
-                        results.getString("spawnerTypeName"), results.getString("monsterName")));
-            }
-            statement.close();
-        } catch (ServiceUnavailableException e) {
-            Brawlator.getLogger().error(errorDatabasePrefix.concat(e.getMessage()));
-        } catch (SQLException e) {
-            Brawlator.getLogger().error("Error while fetching spawners around position : " + e.getMessage());
-        } finally {
-            closeConnection(connection, statement, results);
-        }
-        return spawners;
-    }
-
-    /**
-     * Add a spawner into database
-     * @param spawner Spawner to respawn later
-     */
-    public static void addSpawner(SpawnerBean spawner) {
-        String query = "INSERT INTO spawner (x, y, z, worldName, spawnerTypeName, monsterName) VALUES (?, ?, ?, ?, ?, ?)";
+    public static void addMonsterSpawned(MonsterSpawnedBean monsterSpawned) {
+        String query = "INSERT INTO monsterSpawned (spawnerId, uuid, worldName) VALUES (?, ?, ?)";
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = DatabaseHandler.getDatasource().getConnection();
             statement = connection.prepareStatement(query);
-            statement.setInt(1, spawner.getPosition().getX());
-            statement.setInt(2, spawner.getPosition().getY());
-            statement.setInt(3, spawner.getPosition().getZ());
-            statement.setString(4, spawner.getWorldName());
-            statement.setString(5, spawner.getSpawnerTypeName());
-            statement.setString(6, spawner.getMonsterName());
+            statement.setInt(1, monsterSpawned.getSpawnerId());
+            statement.setString(2, monsterSpawned.getUuid().toString());
+            statement.setString(3, monsterSpawned.getWorldName().toString());
             statement.execute();
             statement.close();
         } catch (ServiceUnavailableException e) {
             Brawlator.getLogger().error(errorDatabasePrefix.concat(e.getMessage()));
         } catch (SQLException e) {
-            Brawlator.getLogger().error("Error while inserting spawner : " + e.getMessage());
+            Brawlator.getLogger().error("Error while inserting spawned monster : " + e.getMessage());
         } finally {
             closeConnection(connection, statement, null);
         }
     }
 
-    /**
-     * Delete a list of spawners from database
-     * @param spawners List of spawners to remove
-     */
-    public static void deleteSpawners(List<SpawnerBean> spawners) {
-        String query = "DELETE FROM spawner WHERE id = ?";
+    public static List<MonsterSpawnedBean> getMonstersSpawned() {
+        String query = "SELECT id, spawnerId, uuid, worldName FROM monsterSpawned";
+        List<MonsterSpawnedBean> monsters = new ArrayList<>();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet results = null;
+        try {
+            connection = DatabaseHandler.getDatasource().getConnection();
+            statement = connection.prepareStatement(query);
+            results = statement.executeQuery();
+            while (results.next()) {
+                monsters.add(new MonsterSpawnedBean(results.getInt("id"),
+                        results.getInt("spawnerId"), UUID.fromString(results.getString("uuid")),
+                        results.getString("worldName")));
+            }
+            statement.close();
+        } catch (ServiceUnavailableException e) {
+            Brawlator.getLogger().error(errorDatabasePrefix.concat(e.getMessage()));
+        } catch (SQLException e) {
+            Brawlator.getLogger().error("Error while fetching monster spawned for spawner : " + e.getMessage());
+        } finally {
+            closeConnection(connection, statement, results);
+        }
+        return monsters;
+    }
+
+    public static List<MonsterSpawnedBean> getMonstersBySpawner(int spawnerId) {
+        String query = "SELECT id, spawnerId, uuid, worldName FROM monsterSpawned WHERE spawnerId = ?";
+        List<MonsterSpawnedBean> monsters = new ArrayList<>();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet results = null;
+        try {
+            connection = DatabaseHandler.getDatasource().getConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, spawnerId);
+            results = statement.executeQuery();
+            while (results.next()) {
+                monsters.add(new MonsterSpawnedBean(results.getInt("id"),
+                        results.getInt("spawnerId"), UUID.fromString(results.getString("uuid")),
+                        results.getString("worldName")));
+            }
+            statement.close();
+        } catch (ServiceUnavailableException e) {
+            Brawlator.getLogger().error(errorDatabasePrefix.concat(e.getMessage()));
+        } catch (SQLException e) {
+            Brawlator.getLogger().error("Error while fetching monster spawned for spawner : " + e.getMessage());
+        } finally {
+            closeConnection(connection, statement, results);
+        }
+        return monsters;
+    }
+
+    public static void deleteMonsterByUuid(String uuid) {
+        String query = "DELETE FROM monsterSpawned WHERE uuid = ?";
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = DatabaseHandler.getDatasource().getConnection();
-            for (SpawnerBean spawner : spawners) {
-                statement = connection.prepareStatement(query);
-                statement.setInt(1, spawner.getId());
-                statement.execute();
-                statement.close();
-            }
+            statement = connection.prepareStatement(query);
+            statement.setString(1, uuid);
+            statement.execute();
+            statement.close();
         } catch (ServiceUnavailableException e) {
             Brawlator.getLogger().error(errorDatabasePrefix.concat(e.getMessage()));
         } catch (SQLException e) {
-            Brawlator.getLogger().error("Error while deleting spawners : " + e.getMessage());
+            Brawlator.getLogger().error("Error while deleting monsters spawned : " + e.getMessage());
         } finally {
             closeConnection(connection, statement, null);
         }

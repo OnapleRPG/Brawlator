@@ -10,16 +10,19 @@ public class SpawnerTypeBean {
      */
     @Setting(value="name")
     private String name;
+
     /**
      * Rate at which the mobs can spawn
      */
-    @Setting(value="spawnRate")
-    private double spawnRate;
+    @Setting(value="rate")
+    private double rate;
+
     /**
      * Max range at which the mob can spawn
      */
     @Setting(value="maxSpawnRange")
     private double maxSpawnRange;
+
     /**
      * Max mob quantity the spawner can have around it
      */
@@ -32,8 +35,8 @@ public class SpawnerTypeBean {
     public String getName() {
         return name;
     }
-    public double getSpawnRate() {
-        return spawnRate;
+    public double getRate() {
+        return rate;
     }
     public double getMaxSpawnRange() {
         return maxSpawnRange;
@@ -45,8 +48,8 @@ public class SpawnerTypeBean {
     public void setName(String name) {
         this.name = name;
     }
-    public void setSpawnRate(double spawnRate) {
-        this.spawnRate = spawnRate;
+    public void setRate(double rate) {
+        this.rate = rate;
     }
     public void setMaxSpawnRange(double maxSpawnRange) {
         this.maxSpawnRange = maxSpawnRange;

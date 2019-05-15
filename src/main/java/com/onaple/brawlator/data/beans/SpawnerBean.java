@@ -4,16 +4,46 @@ import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.world.World;
 
 import java.util.Date;
-import java.util.Optional;
 
 public class SpawnerBean {
+    /**
+     * Spawner ID
+     */
     private int id;
+
+    /**
+     * Spawner position
+     */
     private Vector3i position;
+
+    /**
+     * Spawner world name
+     */
     private String worldName;
+
+    /**
+     * Spawner type name, stored in configuration
+     */
     private String spawnerTypeName;
+
+    /**
+     * Monster name, stored in configuration or vanilla one
+     */
     private String monsterName;
+
+    /**
+     * World reference set afterwards
+     */
     private World world = null;
+
+    /**
+     * Spawner type set afterwards
+     */
     private SpawnerTypeBean spawnerType = null;
+
+    /**
+     * Last spawn date
+     */
     private Date lastSpawn = new Date();
 
     public SpawnerBean(int id, Vector3i position, String worldName, String spawnerTypeName, String monsterName) {

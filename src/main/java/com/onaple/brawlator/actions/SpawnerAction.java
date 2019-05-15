@@ -5,6 +5,7 @@ import com.flowpowered.math.vector.Vector3i;
 import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.data.beans.SpawnerBean;
 import com.onaple.brawlator.data.beans.SpawnerTypeBean;
+import com.onaple.brawlator.data.dao.MonsterSpawnedDao;
 import com.onaple.brawlator.data.dao.SpawnerDao;
 import com.onaple.brawlator.data.handlers.ConfigurationHandler;
 import com.onaple.brawlator.exceptions.EntityTypeNotFoundException;
@@ -15,7 +16,6 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.world.World;
 
 import java.util.*;
 
@@ -76,16 +76,27 @@ public class SpawnerAction {
                 int spawnX = (int) Math.round(spawner.getPosition().getX() + Math.random() * spawner.getSpawnerType().getMaxSpawnRange()*2 - spawner.getSpawnerType().getMaxSpawnRange());
                 int spawnZ = (int) Math.round(spawner.getPosition().getZ() + Math.random() * spawner.getSpawnerType().getMaxSpawnRange()*2 - spawner.getSpawnerType().getMaxSpawnRange());
                 // Checking rate limitation
-                if (((new Date()).getTime() - spawner.getLastSpawn().getTime()) / 1000 >= spawner.getSpawnerType().getSpawnRate()) {
-                    // Invoking
-                    try {
-                        Brawlator.getMonsterAction().invokeMonster(spawner.getWorld().getLocation(new Vector3i(spawnX, spawner.getPosition().getY(), spawnZ)), spawner.getMonsterName());
-                    } catch (MonsterNotFoundException | EntityTypeNotFoundException e) {
-                        Brawlator.getLogger().error("Error while spawning monster from spawner : " + e.getMessage());
+                if (((new Date()).getTime() - spawner.getLastSpawn().getTime()) / 1000 >= spawner.getSpawnerType().getRate()) {
+                    if (MonsterSpawnedDao.getMonstersBySpawner(spawner.getId()).size() < spawner.getSpawnerType().getQuantityMax()) {
+                        // Invoking
+                        try {
+                            Brawlator.getMonsterAction().invokeMonster(spawner.getWorld().getLocation(new Vector3i(spawnX, spawner.getPosition().getY(), spawnZ)), spawner.getMonsterName(), spawner.getId());
+                        } catch (MonsterNotFoundException | EntityTypeNotFoundException e) {
+                            Brawlator.getLogger().error("Error while spawning monster from spawner : " + e.getMessage());
+                        }
+                        spawner.setLastSpawn(new Date());
                     }
-                    spawner.setLastSpawn(new Date());
                 }
             }
+        });
+    }
+    public void deleteNonExistingMonsters() {
+        MonsterSpawnedDao.getMonstersSpawned().forEach(monster -> {
+            Sponge.getServer().getWorld(monster.getWorldName()).ifPresent(world -> {
+                if (!world.getEntity(monster.getUuid()).isPresent()) {
+                    MonsterSpawnedDao.deleteMonsterByUuid(monster.getUuid().toString());
+                }
+            });
         });
     }
 }
