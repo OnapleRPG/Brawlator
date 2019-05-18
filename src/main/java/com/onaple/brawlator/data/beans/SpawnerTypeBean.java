@@ -18,6 +18,12 @@ public class SpawnerTypeBean {
     private double rate;
 
     /**
+     * Max range at which the mob can go without triggering despawn
+     */
+    @Setting(value="maxRoamRange")
+    private double maxRoamRange;
+
+    /**
      * Max range at which the mob can spawn
      */
     @Setting(value="maxSpawnRange")
@@ -38,6 +44,9 @@ public class SpawnerTypeBean {
     public double getRate() {
         return rate;
     }
+    public double getMaxRoamRange() {
+        return maxRoamRange;
+    }
     public double getMaxSpawnRange() {
         return maxSpawnRange;
     }
@@ -50,6 +59,9 @@ public class SpawnerTypeBean {
     }
     public void setRate(double rate) {
         this.rate = rate;
+    }
+    public void setMaxRoamRange(double maxRoamRange) {
+        this.maxRoamRange = maxRoamRange;
     }
     public void setMaxSpawnRange(double maxSpawnRange) {
         this.maxSpawnRange = maxSpawnRange;

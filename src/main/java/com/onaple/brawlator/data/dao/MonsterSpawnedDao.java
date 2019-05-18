@@ -31,7 +31,28 @@ public class MonsterSpawnedDao {
         } catch (ServiceUnavailableException e) {
             Brawlator.getLogger().error(errorDatabasePrefix.concat(e.getMessage()));
         } catch (SQLException e) {
-            Brawlator.getLogger().error("Error while creating spanwed monster table : " + e.getMessage());
+            Brawlator.getLogger().error("Error while creating spawned monster table : " + e.getMessage());
+        } finally {
+            closeConnection(connection, statement, null);
+        }
+    }
+
+    /**
+     * Clear the table
+     */
+    public static void clearTable() {
+        String query = "DELETE FROM monsterSpawned;";
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DatabaseHandler.getDatasource().getConnection();
+            statement = connection.prepareStatement(query);
+            statement.execute();
+            statement.close();
+        } catch (ServiceUnavailableException e) {
+            Brawlator.getLogger().error(errorDatabasePrefix.concat(e.getMessage()));
+        } catch (SQLException e) {
+            Brawlator.getLogger().error("Error while cleaning spawned monster table : " + e.getMessage());
         } finally {
             closeConnection(connection, statement, null);
         }

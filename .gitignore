@@ -4,5 +4,6 @@ build
 gradle
 *.iml
 gradle.properties
+version.properties
 classes
 gradlew

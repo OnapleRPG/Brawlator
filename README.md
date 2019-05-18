@@ -30,7 +30,8 @@ Used to generate custom monsters with special attributes. You can still use vani
 
 ### spawners.conf
 Used to set spawner configuration. Each spawner you create must have a monster and a type set.  
-* **count**: Max monster count from the spawner
+* **quantityMax**: Max monster count from the spawner
 * **name**: Type name (used when issuing commands)  
-* **range**: Max range the monster can spawn around the spawner  
+* **maxSpawnRange**: Max range the monster can spawn around the spawner  
+* **maxRoamRange**: Max range the monster can roam around the spawner without despawning (0 for unlimited) 
 * **rate**: Minimum seconds before the next spawn is allowed  

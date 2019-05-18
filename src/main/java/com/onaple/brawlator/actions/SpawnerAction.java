@@ -15,9 +15,13 @@ import com.onaple.brawlator.utils.SpawnerBuilder;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
+import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.world.World;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class SpawnerAction {
     private Collection<Player> spawnerViewers = new ArrayList<>();
@@ -90,6 +94,7 @@ public class SpawnerAction {
             }
         });
     }
+
     public void deleteNonExistingMonsters() {
         MonsterSpawnedDao.getMonstersSpawned().forEach(monster -> {
             Sponge.getServer().getWorld(monster.getWorldName()).ifPresent(world -> {
@@ -98,5 +103,32 @@ public class SpawnerAction {
                 }
             });
         });
+    }
+
+    public void despawnUndisciplinedMonsters() {
+        MonsterSpawnedDao.getMonstersSpawned().forEach(monster -> {
+            SpawnerDao.getSpawners().stream().filter(spawner -> spawner.getId() == monster.getSpawnerId()).findAny().ifPresent(spawner -> {
+                spawner.getWorld().getEntity(monster.getUuid()).ifPresent(entity -> {
+                    Vector3d entityPosition = entity.getLocation().getPosition();
+                    Vector3i spawnerPosition = spawner.getPosition();
+                    if (spawner.getSpawnerType().getMaxRoamRange() > 0 && new Vector3d(spawnerPosition.getX(), spawnerPosition.getY(), spawnerPosition.getZ()).distance(entityPosition) > spawner.getSpawnerType().getMaxRoamRange()) {
+                        ParticleEffect particle = ParticleEffect.builder().type(ParticleTypes.CLOUD).build();
+                        spawner.getWorld().getPlayers().forEach(player -> player.spawnParticles(particle, entityPosition.add(0, 1, 0), 15000));
+                        Task.builder().execute(() -> this.killUndisciplinedMonster(entity, spawner.getWorld()))
+                                .delay(5, TimeUnit.SECONDS)
+                                .name("Task despawning a given monster because he's too far away").submit(Brawlator.getInstance());
+                    }
+                });
+            });
+        });
+    }
+
+    private void killUndisciplinedMonster(Entity entity, World world) {
+        if (entity != null && world.getEntity(entity.getUniqueId()).isPresent()) {
+            ParticleEffect particle = ParticleEffect.builder().type(ParticleTypes.CLOUD).build();
+            world.getPlayers().forEach(player -> player.spawnParticles(particle, entity.getLocation().getPosition().add(0, 1, 0), 15000));
+            MonsterSpawnedDao.deleteMonsterByUuid(entity.getUniqueId().toString());
+            entity.remove();
+        }
     }
 }

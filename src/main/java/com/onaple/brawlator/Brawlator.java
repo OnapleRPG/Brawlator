@@ -42,6 +42,11 @@ public class Brawlator {
     private static final String VISION_PERMISSION = "brawlator.command.vision";
     private static final String INVOKE_PERMISSION = "brawlator.command.invoke";
 
+    private static Brawlator instance;
+    public static Brawlator getInstance() {
+        return instance;
+    }
+
     private static Logger logger;
     @Inject
     private void setLogger(Logger logger) {
@@ -67,6 +72,7 @@ public class Brawlator {
 
 	@Listener
 	public void onServerStart(GameStartedServerEvent event) {
+        Brawlator.instance = this;
         spawnerAction = new SpawnerAction();
         monsterAction = new MonsterAction();
 
@@ -124,6 +130,9 @@ public class Brawlator {
         Task.builder().execute(spawnerAction::deleteNonExistingMonsters)
                 .delay(30, TimeUnit.SECONDS).interval(30, TimeUnit.SECONDS)
                 .name("Task deleting non existing monsters spawned from spawner from database").submit(this);
+        Task.builder().execute(spawnerAction::despawnUndisciplinedMonsters)
+                .delay(15, TimeUnit.SECONDS).interval(15, TimeUnit.SECONDS)
+                .name("Task despawning monsters that go too far away from their spawner").submit(this);
         Task.builder().execute(spawnerAction::invokeSpawnerMonsters)
                 .delay(5, TimeUnit.SECONDS).interval(5, TimeUnit.SECONDS)
                 .name("Task invoking the monsters on every spawners.").submit(this);
@@ -184,8 +193,11 @@ public class Brawlator {
     public void onServerStop(GameStoppingServerEvent event) {
         MonsterSpawnedDao.getMonstersSpawned().forEach(monster -> {
             Sponge.getServer().getWorld(monster.getWorldName()).ifPresent(world -> {
-                world.getEntity(monster.getUuid()).ifPresent(Entity::remove);
+                if (world.getEntity(monster.getUuid()).isPresent()) {
+                    world.getEntity(monster.getUuid()).get().remove();
+                }
             });
         });
+        MonsterSpawnedDao.clearTable();
     }
 }

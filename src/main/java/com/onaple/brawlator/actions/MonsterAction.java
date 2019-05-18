@@ -38,6 +38,10 @@ public class MonsterAction {
             baseEntity.offer(Keys.ATTACK_DAMAGE, monster.getAttackDamage());
             baseEntity.offer(Keys.KNOCKBACK_STRENGTH, monster.getKnockbackResistance());
 
+            if (spawnerId != -1) {
+                MonsterSpawnedDao.addMonsterSpawned(new MonsterSpawnedBean(spawnerId, baseEntity.getUniqueId(), baseEntity.getWorld().getName()));
+            }
+
             location.spawnEntity(baseEntity);
         } else {
             Optional<EntityType> entityTypeOptional = Sponge.getRegistry().getType(EntityType.class, monsterName);
