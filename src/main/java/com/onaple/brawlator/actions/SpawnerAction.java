@@ -112,8 +112,8 @@ public class SpawnerAction {
                     Vector3d entityPosition = entity.getLocation().getPosition();
                     Vector3i spawnerPosition = spawner.getPosition();
                     if (spawner.getSpawnerType().getMaxRoamRange() > 0 && new Vector3d(spawnerPosition.getX(), spawnerPosition.getY(), spawnerPosition.getZ()).distance(entityPosition) > spawner.getSpawnerType().getMaxRoamRange()) {
-                        ParticleEffect particle = ParticleEffect.builder().type(ParticleTypes.CLOUD).build();
-                        spawner.getWorld().getPlayers().forEach(player -> player.spawnParticles(particle, entityPosition.add(0, 1, 0), 15000));
+                        ParticleEffect particle = ParticleEffect.builder().type(ParticleTypes.CLOUD).quantity(10).build();
+                        spawner.getWorld().getPlayers().forEach(player -> player.spawnParticles(particle, entityPosition.add(0, 1, 0)));
                         Task.builder().execute(() -> this.killUndisciplinedMonster(entity, spawner.getWorld()))
                                 .delay(5, TimeUnit.SECONDS)
                                 .name("Task despawning a given monster because he's too far away").submit(Brawlator.getInstance());
@@ -125,8 +125,8 @@ public class SpawnerAction {
 
     private void killUndisciplinedMonster(Entity entity, World world) {
         if (entity != null && world.getEntity(entity.getUniqueId()).isPresent()) {
-            ParticleEffect particle = ParticleEffect.builder().type(ParticleTypes.CLOUD).build();
-            world.getPlayers().forEach(player -> player.spawnParticles(particle, entity.getLocation().getPosition().add(0, 1, 0), 15000));
+            ParticleEffect particle = ParticleEffect.builder().type(ParticleTypes.CLOUD).quantity(15).build();
+            world.getPlayers().forEach(player -> player.spawnParticles(particle, entity.getLocation().getPosition().add(0, 1, 0)));
             MonsterSpawnedDao.deleteMonsterByUuid(entity.getUniqueId().toString());
             entity.remove();
         }
