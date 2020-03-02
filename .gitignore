@@ -6,4 +6,4 @@ gradle
 gradle.properties
 version.properties
 classes
-gradlew
+gradlew.bat
