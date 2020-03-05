@@ -8,7 +8,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 
 public class DatabaseHandler {
-    private static String JDBC_URL = "jdbc:sqlite:./brawlator.db";
+    private static final  String JDBC_URL = "jdbc:h2:./brawlator.db";
 
     private static SqlService sqlService;
 
