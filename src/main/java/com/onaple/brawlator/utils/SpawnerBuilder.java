@@ -7,10 +7,17 @@ import com.onaple.brawlator.data.handlers.ConfigurationHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.World;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Optional;
 
+@Singleton
 public class SpawnerBuilder {
-    public static SpawnerBean buildSpawner(int id, Vector3i position, String worldName, String spawnerTypeName, String monsterName) {
+
+    @Inject
+    ConfigurationHandler configurationHandler;
+
+    public SpawnerBean buildSpawner(int id, Vector3i position, String worldName, String spawnerTypeName, String monsterName) {
         SpawnerBean spawner = new SpawnerBean(id, position, worldName, spawnerTypeName, monsterName);
 
         spawner.setSpawnerType(getSpawnerType(spawnerTypeName).orElse(null));
@@ -18,7 +25,7 @@ public class SpawnerBuilder {
 
         return spawner;
     }
-    public static SpawnerBean buildSpawner(Vector3i position, String worldName, String spawnerTypeName, String monsterName) {
+    public SpawnerBean buildSpawner(Vector3i position, String worldName, String spawnerTypeName, String monsterName) {
         SpawnerBean spawner = new SpawnerBean(position, worldName, spawnerTypeName, monsterName);
 
         spawner.setSpawnerType(getSpawnerType(spawnerTypeName).orElse(null));
@@ -27,11 +34,11 @@ public class SpawnerBuilder {
         return spawner;
     }
 
-    private static Optional<SpawnerTypeBean> getSpawnerType(String typeName) {
-        return ConfigurationHandler.getSpawnerTypeList().stream().filter(m -> m.getName().toLowerCase().equals(typeName.toLowerCase())).findAny();
+    private Optional<SpawnerTypeBean> getSpawnerType(String typeName) {
+        return configurationHandler.getSpawnerTypeList().stream().filter(m -> m.getName().toLowerCase().equals(typeName.toLowerCase())).findAny();
     }
 
-    private static Optional<World> getSpawnerWorld(String worldName) {
+    private Optional<World> getSpawnerWorld(String worldName) {
         return Sponge.getServer().getWorld(worldName);
     }
 }

@@ -36,6 +36,13 @@ public class MonsterBean {
     @Setting(value="knockbackResistance")
     private int knockbackResistance;
 
+    public LootTable getLootTable() {
+        return lootTable;
+    }
+
+    @Setting(value = "loot")
+    private LootTable lootTable;
+
     public MonsterBean() {
     }
 

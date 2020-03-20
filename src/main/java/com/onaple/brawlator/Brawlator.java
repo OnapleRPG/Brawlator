@@ -1,28 +1,41 @@
 package com.onaple.brawlator;
 
+import com.google.common.reflect.TypeToken;
 import com.onaple.brawlator.actions.MonsterAction;
 import com.onaple.brawlator.actions.SpawnerAction;
 import com.onaple.brawlator.commands.InvokeCommand;
 import com.onaple.brawlator.commands.ViewCommand;
 import com.onaple.brawlator.commands.SpawnerCreateCommand;
 import com.onaple.brawlator.commands.SpawnerDeleteCommand;
+import com.onaple.brawlator.data.MonsterLootManipulator;
+import com.onaple.brawlator.data.beans.LootTable;
+import com.onaple.brawlator.data.beans.loot.Loot;
 import com.onaple.brawlator.data.dao.MonsterSpawnedDao;
 import com.onaple.brawlator.data.dao.SpawnerDao;
 import com.onaple.brawlator.data.handlers.ConfigurationHandler;
+import com.onaple.brawlator.data.serializers.LootSerializer;
+import com.onaple.brawlator.data.serializers.LootTableSerializer;
+import com.onaple.brawlator.events.LootEventListener;
+import ninja.leaping.configurate.ConfigurationOptions;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.data.DataRegistration;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
+import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.plugin.PluginManager;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 
@@ -43,6 +56,10 @@ public class Brawlator {
     private static final String INVOKE_PERMISSION = "brawlator.command.invoke";
 
     private static Brawlator instance;
+
+    public Brawlator() {
+    }
+
     public static Brawlator getInstance() {
         return instance;
     }
@@ -56,27 +73,63 @@ public class Brawlator {
         return logger;
     }
 
+    private static ConfigurationHandler configurationHandler;
+    public static ConfigurationHandler getConfigurationHandler() {
+        return configurationHandler;
+    }
+    @Inject
+    public void setConfigurationHandler(ConfigurationHandler configurationHandler) {
+        Brawlator.configurationHandler = configurationHandler;
+    }
+
     @Inject
     @ConfigDir(sharedRoot = true)
     private Path configDir;
 
+
     private static SpawnerAction spawnerAction;
+
+    @Inject
+    private void setSpawnerAction(SpawnerAction spawnerAction){
+        Brawlator.spawnerAction = spawnerAction;
+    }
     public static SpawnerAction getSpawnerAction() {
         return spawnerAction;
     }
 
+
     private static MonsterAction monsterAction;
+    @Inject
+    public void setMonsterAction(MonsterAction monsterAction) {
+        Brawlator.monsterAction = monsterAction;
+    }
     public static MonsterAction getMonsterAction() {
         return monsterAction;
+    }
+
+    @Inject
+    private PluginManager pluginManager;
+
+    @Inject SpawnerDao spawnerDao;
+
+
+    @Listener
+    public void preInit(GamePreInitializationEvent e){
+        DataRegistration.builder().dataName("Monster loot")
+                .manipulatorId("monster.loot") // prefix is added for you and you can't add it yourself
+                .dataClass(MonsterLootManipulator.class)
+                .immutableClass(MonsterLootManipulator.Immutable.class)
+                .builder(new MonsterLootManipulator.Builder())
+                .buildAndRegister(pluginManager.getPlugin("brawlator").get());
+        Sponge.getEventManager().registerListeners(this, new LootEventListener());
+
     }
 
 	@Listener
 	public void onServerStart(GameStartedServerEvent event) {
         Brawlator.instance = this;
-        spawnerAction = new SpawnerAction();
-        monsterAction = new MonsterAction();
 
-        SpawnerDao.createTableIfNotExist();
+        spawnerDao.createTableIfNotExist();
         MonsterSpawnedDao.createTableIfNotExist();
 
         CommandSpec invokeCommand = CommandSpec.builder()
@@ -137,10 +190,12 @@ public class Brawlator {
                 .delay(5, TimeUnit.SECONDS).interval(5, TimeUnit.SECONDS)
                 .name("Task invoking the monsters on every spawners.").submit(this);
 
+        loadLoot();
         getLogger().info(loadMonsters() + " monsters loaded.");
         getLogger().info(loadSpawnerTypes() + " spawners types loaded.");
 
         spawnerAction.updateSpawners();
+
 
 		getLogger().info("BRAWLATOR initialized.");
 	}
@@ -148,7 +203,12 @@ public class Brawlator {
 	private int loadMonsters() {
         initDefaultConfig("monsters.conf");
         try {
-            return ConfigurationHandler.readMonstersConfiguration(ConfigurationHandler.loadConfiguration(configDir + "/brawlator/monsters.conf"));
+            TypeSerializerCollection serializers = TypeSerializers.getDefaultSerializers().newChild();
+            serializers.registerType(TypeToken.of(LootTable.class), new LootTableSerializer());
+            ConfigurationOptions options = ConfigurationOptions.defaults().setSerializers(serializers);
+            CommentedConfigurationNode configurationNode = configurationHandler.loadConfiguration(configDir + "/brawlator/monsters.conf",
+                    options);
+            return configurationHandler.readMonstersConfiguration(configurationNode);
         } catch (IOException | ObjectMappingException e) {
             getLogger().error("Could not read monsters configuration.");
             return 0;
@@ -158,9 +218,24 @@ public class Brawlator {
     private int loadSpawnerTypes() {
         initDefaultConfig("spawners.conf");
         try {
-            return ConfigurationHandler.readSpawnerTypesConfiguration(ConfigurationHandler.loadConfiguration(configDir + "/brawlator/spawners.conf"));
+            CommentedConfigurationNode configurationNode = configurationHandler.loadConfiguration(configDir + "/brawlator/spawners.conf",
+                    ConfigurationOptions.defaults());
+            return configurationHandler.readSpawnerTypesConfiguration(configurationNode);
         } catch (IOException | ObjectMappingException e) {
             getLogger().error("Could not read spawners types configuration.");
+            return 0;
+        }
+    }
+
+    private int loadLoot() {
+        try {
+            TypeSerializerCollection serializers = TypeSerializers.getDefaultSerializers().newChild();
+            serializers.registerType(TypeToken.of(Loot.class), new LootSerializer());
+            ConfigurationOptions options = ConfigurationOptions.defaults().setSerializers(serializers);
+            CommentedConfigurationNode configurationNode = configurationHandler.loadConfiguration(configDir + "/brawlator/loot.conf", options);
+            return configurationHandler.readLootTableConfiguration(configurationNode);
+        } catch (IOException | ObjectMappingException e) {
+            getLogger().error("Could not read spawners types configuration.",e);
             return 0;
         }
     }

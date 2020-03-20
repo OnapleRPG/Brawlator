@@ -20,10 +20,23 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.world.World;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+@Singleton
 public class SpawnerAction {
+
+
+    @Inject
+    private SpawnerBuilder spawnerBuilder;
+
+    @Inject
+    private ConfigurationHandler configurationHandler;
+
+    @Inject SpawnerDao spawnerDao;
+
     private Collection<Player> spawnerViewers = new ArrayList<>();
     private Collection<SpawnerBean> spawners = new ArrayList<>();
 
@@ -38,7 +51,7 @@ public class SpawnerAction {
     }
 
     public void updateSpawners() {
-        spawners = SpawnerDao.getSpawners();
+        spawners = spawnerDao.getSpawners();
     }
 
     public void showSpawnersParticles() {
@@ -58,18 +71,18 @@ public class SpawnerAction {
         if (!Brawlator.getMonsterAction().monsterExists(monsterName)) {
             throw new MonsterNotFoundException(monsterName);
         }
-        SpawnerDao.addSpawner(SpawnerBuilder.buildSpawner(new Vector3i((int)position.getX(), (int)position.getY(), (int)position.getZ()), worldName, spawnerTypeName, monsterName));
+        spawnerDao.addSpawner(spawnerBuilder.buildSpawner(new Vector3i((int)position.getX(), (int)position.getY(), (int)position.getZ()), worldName, spawnerTypeName, monsterName));
         updateSpawners();
     }
 
     private boolean spawnerTypeExists(String spawnerTypeName) {
-        Optional<SpawnerTypeBean> spawnerTypeBeanOptional = ConfigurationHandler.getSpawnerTypeList().stream().filter(m -> m.getName().toLowerCase().equals(spawnerTypeName.toLowerCase())).findAny();
+        Optional<SpawnerTypeBean> spawnerTypeBeanOptional = configurationHandler.getSpawnerTypeList().stream().filter(m -> m.getName().toLowerCase().equals(spawnerTypeName.toLowerCase())).findAny();
         return spawnerTypeBeanOptional.isPresent();
     }
 
     public int removeSpawnersAround(Vector3d position) {
-        List<SpawnerBean> spawnersToDelete = SpawnerDao.getSpawnersAround(new Vector3i((int)Math.round(position.getX()), (int)Math.round(position.getY()), (int)Math.round(position.getZ())));
-        SpawnerDao.deleteSpawners(spawnersToDelete);
+        List<SpawnerBean> spawnersToDelete = spawnerDao.getSpawnersAround(new Vector3i((int)Math.round(position.getX()), (int)Math.round(position.getY()), (int)Math.round(position.getZ())));
+        spawnerDao.deleteSpawners(spawnersToDelete);
         return spawnersToDelete.size();
     }
 
@@ -107,7 +120,7 @@ public class SpawnerAction {
 
     public void despawnUndisciplinedMonsters() {
         MonsterSpawnedDao.getMonstersSpawned().forEach(monster -> {
-            SpawnerDao.getSpawners().stream().filter(spawner -> spawner.getId() == monster.getSpawnerId()).findAny().ifPresent(spawner -> {
+            spawnerDao.getSpawners().stream().filter(spawner -> spawner.getId() == monster.getSpawnerId()).findAny().ifPresent(spawner -> {
                 spawner.getWorld().getEntity(monster.getUuid()).ifPresent(entity -> {
                     Vector3d entityPosition = entity.getLocation().getPosition();
                     Vector3i spawnerPosition = spawner.getPosition();
