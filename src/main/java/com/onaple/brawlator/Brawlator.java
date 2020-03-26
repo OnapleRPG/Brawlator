@@ -16,6 +16,8 @@ import com.onaple.brawlator.data.handlers.ConfigurationHandler;
 import com.onaple.brawlator.data.serializers.LootSerializer;
 import com.onaple.brawlator.data.serializers.LootTableSerializer;
 import com.onaple.brawlator.events.LootEventListener;
+import com.onaple.brawlator.events.NaturalSpawnListener;
+import com.onaple.itemizer.service.IItemService;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -115,6 +117,7 @@ public class Brawlator {
 
     @Listener
     public void preInit(GamePreInitializationEvent e){
+        new BrawlatorKeys();
         DataRegistration.builder().dataName("Monster loot")
                 .manipulatorId("monster.loot") // prefix is added for you and you can't add it yourself
                 .dataClass(MonsterLootManipulator.class)
@@ -122,7 +125,6 @@ public class Brawlator {
                 .builder(new MonsterLootManipulator.Builder())
                 .buildAndRegister(pluginManager.getPlugin("brawlator").get());
         Sponge.getEventManager().registerListeners(this, new LootEventListener());
-
     }
 
 	@Listener
@@ -194,8 +196,9 @@ public class Brawlator {
         getLogger().info(loadMonsters() + " monsters loaded.");
         getLogger().info(loadSpawnerTypes() + " spawners types loaded.");
 
-        spawnerAction.updateSpawners();
+        Sponge.getEventManager().registerListeners(this, new NaturalSpawnListener(monsterAction));
 
+        spawnerAction.updateSpawners();
 
 		getLogger().info("BRAWLATOR initialized.");
 	}

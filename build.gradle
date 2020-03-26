@@ -47,6 +47,7 @@ repositories {
 dependencies {
     compile 'org.spongepowered:spongeapi:7.0.0'
     testCompile "junit:junit:4.11"
+    implementation 'com.onaple:itemizer:3.3.1'
 }
 
 sonarqube {

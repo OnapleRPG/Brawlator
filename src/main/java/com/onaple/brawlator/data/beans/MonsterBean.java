@@ -2,6 +2,7 @@ package com.onaple.brawlator.data.beans;
 
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
+import org.spongepowered.api.entity.EntityType;
 
 @ConfigSerializable
 public class MonsterBean {
@@ -14,7 +15,7 @@ public class MonsterBean {
      * Monster type (race)
      */
     @Setting(value="type")
-    private String type;
+    private EntityType type;
     /**
      * Monster HP
      */
@@ -36,6 +37,31 @@ public class MonsterBean {
     @Setting(value="knockbackResistance")
     private int knockbackResistance;
 
+    @Override
+    public String toString() {
+        return "MonsterBean{" +
+                "name='" + name + '\'' +
+                ", type=" + type +
+                ", hp=" + hp +
+                ", speed=" + speed +
+                ", attackDamage=" + attackDamage +
+                ", knockbackResistance=" + knockbackResistance +
+                ", naturalSpawn=" + naturalSpawn +
+                ", lootTable=" + lootTable +
+                '}';
+    }
+
+    public double getNaturalSpawn() {
+        return naturalSpawn;
+    }
+
+    public void setNaturalSpawn(double naturalSpawn) {
+        this.naturalSpawn = naturalSpawn;
+    }
+
+    @Setting(value = "naturalSpawn")
+    private double naturalSpawn;
+
     public LootTable getLootTable() {
         return lootTable;
     }
@@ -49,7 +75,7 @@ public class MonsterBean {
     public String getName() {
         return name;
     }
-    public String getType() {
+    public EntityType getType() {
         return type;
     }
     public double getHp() {
@@ -62,7 +88,7 @@ public class MonsterBean {
     public void setName(String name) {
         this.name = name;
     }
-    public void setType(String _type) {
+    public void setType(EntityType _type) {
         this.type = _type;
     }
     public void setHp(double hp) { this.hp = hp; }

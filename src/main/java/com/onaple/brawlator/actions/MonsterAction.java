@@ -3,6 +3,7 @@ package com.onaple.brawlator.actions;
 import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.BrawlatorKeys;
 import com.onaple.brawlator.data.MonsterLootManipulator;
+import com.onaple.brawlator.data.beans.LootTable;
 import com.onaple.brawlator.data.beans.MonsterBean;
 import com.onaple.brawlator.data.beans.MonsterSpawnedBean;
 import com.onaple.brawlator.data.beans.loot.ItemTypeLoot;
@@ -14,11 +15,17 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.Location;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Singleton
 public class MonsterAction {
@@ -39,23 +46,9 @@ public class MonsterAction {
         if (monsterOptional.isPresent()) {
             MonsterBean monster = monsterOptional.get();
 
-            Optional<EntityType> entityTypeOptional = Sponge.getRegistry().getType(EntityType.class, monster.getType());
-            if (!entityTypeOptional.isPresent()) {
-                throw new EntityTypeNotFoundException(monster.getType());
-            }
+            Entity baseEntity = createEntity(location,monster);
 
-            Entity baseEntity = location.createEntity(entityTypeOptional.get());
-
-            baseEntity.offer(Keys.MAX_HEALTH, monster.getHp());
-            baseEntity.offer(Keys.HEALTH, monster.getHp());
-            baseEntity.offer(Keys.WALKING_SPEED, monster.getSpeed());
-            baseEntity.offer(Keys.ATTACK_DAMAGE, monster.getAttackDamage());
-            baseEntity.offer(Keys.KNOCKBACK_STRENGTH, monster.getKnockbackResistance());
-            MonsterLootManipulator monsterLootManipulator = baseEntity.getOrCreate(MonsterLootManipulator.class).get();
-            baseEntity.offer(monsterLootManipulator);
-            baseEntity.offer(BrawlatorKeys.LOOT, monster.getLootTable().getLoot());
-            Brawlator.getLogger().info("loot {}", baseEntity.get(BrawlatorKeys.LOOT));
-        if (spawnerId != -1) {
+            if (spawnerId != -1) {
                 MonsterSpawnedDao.addMonsterSpawned(new MonsterSpawnedBean(spawnerId, baseEntity.getUniqueId(), baseEntity.getWorld().getName()));
             }
             location.spawnEntity(baseEntity);
@@ -73,5 +66,32 @@ public class MonsterAction {
 
             location.spawnEntity(baseEntity);
         }
+    }
+
+    public Entity createEntity(Location location, MonsterBean monster) {
+        Entity entity = location.createEntity(monster.getType());
+        entity.offer(Keys.DISPLAY_NAME, Text.of(monster.getName(), TextColors.GOLD));
+        entity.offer(Keys.CUSTOM_NAME_VISIBLE,true);
+        entity.offer(Keys.MAX_HEALTH, monster.getHp());
+        entity.offer(Keys.HEALTH, monster.getHp());
+        entity.offer(Keys.WALKING_SPEED, monster.getSpeed());
+        entity.offer(Keys.ATTACK_DAMAGE, monster.getAttackDamage());
+        entity.offer(Keys.KNOCKBACK_STRENGTH, monster.getKnockbackResistance());
+        applyLoot(entity, monster.getLootTable());
+        return entity;
+    }
+
+    public Map<EntityType, List<MonsterBean>> getMonsterBytype() {
+        List<MonsterBean> monsters = configurationHandler.getMonsterList();
+        return monsters.stream().collect(Collectors.groupingBy(monsterBean -> monsterBean.getType()));
+    }
+
+    private Entity applyLoot(Entity entity, LootTable lootTable) {
+        if (Objects.nonNull(lootTable)) {
+            MonsterLootManipulator monsterLootManipulator = entity.getOrCreate(MonsterLootManipulator.class).get();
+            entity.offer(monsterLootManipulator);
+            entity.offer(BrawlatorKeys.LOOT, lootTable.getLoot());
+        }
+        return entity;
     }
 }

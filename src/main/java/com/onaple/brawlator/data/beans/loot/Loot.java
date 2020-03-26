@@ -12,7 +12,7 @@ public interface Loot extends DataSerializable {
         return new Loot() {
             @Override
             public ItemStack fetch() {
-                return null;
+                return ItemStack.empty();
             }
 
             @Override
@@ -22,7 +22,7 @@ public interface Loot extends DataSerializable {
 
             @Override
             public DataContainer toContainer() {
-                return null;
+                return DataContainer.createNew();
             }
         };
     }

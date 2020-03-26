@@ -73,8 +73,8 @@ public class MonsterLootManipulator extends AbstractSingleData<Loot, MonsterLoot
 
     @Override
     public DataContainer toContainer() {
-        return super.toContainer().set(BrawlatorKeys.LOOT.getQuery(), getValue());
-
+        return super.toContainer()
+                .set(BrawlatorKeys.LOOT.getQuery(), getValue());
     }
 
     public static class Immutable extends AbstractImmutableSingleData<Loot, Immutable, MonsterLootManipulator> {
