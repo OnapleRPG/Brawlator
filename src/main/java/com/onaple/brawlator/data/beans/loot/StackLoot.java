@@ -6,11 +6,12 @@ import org.spongepowered.api.data.Queries;
 import org.spongepowered.api.item.inventory.ItemStack;
 
 
-public class StackLoot implements Loot {
+public class StackLoot extends PonderedLoot {
 
     private ItemStack stack;
 
-    public StackLoot(ItemStack stack) {
+    public StackLoot(double weigth, ItemStack stack) {
+        super(weigth);
         this.stack = stack;
     }
 
@@ -29,5 +30,13 @@ public class StackLoot implements Loot {
         return DataContainer.createNew()
                 .set(DataQuery.of("stack"), this.stack)
                 .set(Queries.CONTENT_VERSION, getContentVersion());
+    }
+
+    @Override
+    public String toString() {
+        return "StackLoot{" +
+                "stack=" + stack +
+                ", weigth=" + weigth +
+                '}';
     }
 }

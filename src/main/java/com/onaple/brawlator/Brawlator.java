@@ -8,7 +8,8 @@ import com.onaple.brawlator.commands.ViewCommand;
 import com.onaple.brawlator.commands.SpawnerCreateCommand;
 import com.onaple.brawlator.commands.SpawnerDeleteCommand;
 import com.onaple.brawlator.data.MonsterLootManipulator;
-import com.onaple.brawlator.data.beans.LootTable;
+import com.onaple.brawlator.data.beans.GlobalConfig;
+import com.onaple.brawlator.data.beans.table.LootTable;
 import com.onaple.brawlator.data.beans.loot.Loot;
 import com.onaple.brawlator.data.dao.MonsterSpawnedDao;
 import com.onaple.brawlator.data.dao.SpawnerDao;
@@ -17,7 +18,7 @@ import com.onaple.brawlator.data.serializers.LootSerializer;
 import com.onaple.brawlator.data.serializers.LootTableSerializer;
 import com.onaple.brawlator.events.LootEventListener;
 import com.onaple.brawlator.events.NaturalSpawnListener;
-import com.onaple.itemizer.service.IItemService;
+import com.onaple.brawlator.probability.ProbabilityFetcher;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -67,18 +68,22 @@ public class Brawlator {
     }
 
     private static Logger logger;
+
     @Inject
     private void setLogger(Logger logger) {
         Brawlator.logger = logger;
     }
+
     public static Logger getLogger() {
         return logger;
     }
 
     private static ConfigurationHandler configurationHandler;
+
     public static ConfigurationHandler getConfigurationHandler() {
         return configurationHandler;
     }
+
     @Inject
     public void setConfigurationHandler(ConfigurationHandler configurationHandler) {
         Brawlator.configurationHandler = configurationHandler;
@@ -88,23 +93,35 @@ public class Brawlator {
     @ConfigDir(sharedRoot = true)
     private Path configDir;
 
+    @Inject
+    private PluginContainer pluginContainer;
+
 
     private static SpawnerAction spawnerAction;
 
+    private static GlobalConfig globalConfig;
+
+    public static GlobalConfig getGlobalConfig() {
+        return globalConfig;
+    }
+
     @Inject
-    private void setSpawnerAction(SpawnerAction spawnerAction){
+    private void setSpawnerAction(SpawnerAction spawnerAction) {
         Brawlator.spawnerAction = spawnerAction;
     }
+
     public static SpawnerAction getSpawnerAction() {
         return spawnerAction;
     }
 
 
     private static MonsterAction monsterAction;
+
     @Inject
     public void setMonsterAction(MonsterAction monsterAction) {
         Brawlator.monsterAction = monsterAction;
     }
+
     public static MonsterAction getMonsterAction() {
         return monsterAction;
     }
@@ -112,11 +129,15 @@ public class Brawlator {
     @Inject
     private PluginManager pluginManager;
 
-    @Inject SpawnerDao spawnerDao;
+    @Inject
+    SpawnerDao spawnerDao;
+
+    @Inject
+    private ProbabilityFetcher probabilityFetcher;
 
 
     @Listener
-    public void preInit(GamePreInitializationEvent e){
+    public void preInit(GamePreInitializationEvent e) {
         new BrawlatorKeys();
         DataRegistration.builder().dataName("Monster loot")
                 .manipulatorId("monster.loot") // prefix is added for you and you can't add it yourself
@@ -127,8 +148,8 @@ public class Brawlator {
         Sponge.getEventManager().registerListeners(this, new LootEventListener());
     }
 
-	@Listener
-	public void onServerStart(GameStartedServerEvent event) {
+    @Listener
+    public void onServerStart(GameStartedServerEvent event) {
         Brawlator.instance = this;
 
         spawnerDao.createTableIfNotExist();
@@ -192,18 +213,27 @@ public class Brawlator {
                 .delay(5, TimeUnit.SECONDS).interval(5, TimeUnit.SECONDS)
                 .name("Task invoking the monsters on every spawners.").submit(this);
 
+
+        initDefaultConfig("global.conf");
+        Brawlator.globalConfig = getConfigurationHandler().loadGlobalConfig(configDir + "/brawlator/global.conf");
+
         loadLoot();
         getLogger().info(loadMonsters() + " monsters loaded.");
         getLogger().info(loadSpawnerTypes() + " spawners types loaded.");
 
-        Sponge.getEventManager().registerListeners(this, new NaturalSpawnListener(monsterAction));
-
+        if (Brawlator.getGlobalConfig().isEnableNaturalSpawning()) {
+            getLogger().info("Enable natural spawning of configured monsters.");
+            Sponge.getEventManager().registerListeners(this, new NaturalSpawnListener(monsterAction,probabilityFetcher));
+        } else {
+            getLogger().info("Natural spawning disabled, to enable it edit global.conf > enableNaturalSpawning");
+        }
         spawnerAction.updateSpawners();
 
-		getLogger().info("BRAWLATOR initialized.");
-	}
+        getLogger().info("BRAWLATOR initialized.");
+    }
 
-	private int loadMonsters() {
+
+    private int loadMonsters() {
         initDefaultConfig("monsters.conf");
         try {
             TypeSerializerCollection serializers = TypeSerializers.getDefaultSerializers().newChild();
@@ -231,6 +261,7 @@ public class Brawlator {
     }
 
     private int loadLoot() {
+        initDefaultConfig("loot.conf");
         try {
             TypeSerializerCollection serializers = TypeSerializers.getDefaultSerializers().newChild();
             serializers.registerType(TypeToken.of(Loot.class), new LootSerializer());
@@ -238,26 +269,24 @@ public class Brawlator {
             CommentedConfigurationNode configurationNode = configurationHandler.loadConfiguration(configDir + "/brawlator/loot.conf", options);
             return configurationHandler.readLootTableConfiguration(configurationNode);
         } catch (IOException | ObjectMappingException e) {
-            getLogger().error("Could not read spawners types configuration.",e);
+            getLogger().error("Could not read spawners types configuration.", e);
             return 0;
         }
     }
 
     private void initDefaultConfig(String path) {
         if (Files.notExists(Paths.get(configDir + "/brawlator/" + path))) {
-            PluginContainer pluginInstance = Sponge.getPluginManager().getPlugin("brawlator").orElse(null);
-            if (pluginInstance != null) {
-                Optional<Asset> monstersDefaultConfigFile = pluginInstance.getAsset(path);
-                getLogger().info("No config file set for {}. Default config will be loaded",path);
-                if (monstersDefaultConfigFile.isPresent()) {
-                    try {
-                        monstersDefaultConfigFile.get().copyToDirectory(Paths.get(configDir + "/brawlator/"));
-                    } catch (IOException e) {
-                        logger.error("Error while setting default configuration : {}", e.getMessage());
-                    }
-                } else {
-                    logger.warn("Item default config not found");
+
+            Optional<Asset> defaultConfigFile = pluginContainer.getAsset(path);
+            getLogger().info("No config file set for {}. Default config will be loaded", path);
+            if (defaultConfigFile.isPresent()) {
+                try {
+                    defaultConfigFile.get().copyToDirectory(Paths.get(configDir + "/brawlator/"));
+                } catch (IOException e) {
+                    logger.error("Error while setting default configuration : {}", e.getMessage());
                 }
+            } else {
+                logger.warn("{} config not found", path);
             }
         }
     }

@@ -6,6 +6,7 @@ import com.onaple.brawlator.data.beans.MonsterBean;
 import com.onaple.brawlator.data.handlers.ConfigurationHandler;
 import com.onaple.brawlator.exceptions.EntityTypeNotFoundException;
 import com.onaple.brawlator.exceptions.MonsterNotFoundException;
+import com.onaple.brawlator.probability.ProbabilityFetcher;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
@@ -27,11 +28,11 @@ import java.util.stream.Collectors;
 public class NaturalSpawnListener {
 
     private final MonsterAction monsterAction;
-    private final Random random;
+    private final ProbabilityFetcher fetcher;
 
-    public NaturalSpawnListener(MonsterAction monsterAction) {
+    public NaturalSpawnListener(MonsterAction monsterAction,ProbabilityFetcher fetcher) {
         this.monsterAction = monsterAction;
-        random = new Random();
+        this.fetcher = fetcher;
     }
 
     @Listener
@@ -54,9 +55,6 @@ public class NaturalSpawnListener {
     }
     private Optional<MonsterBean> getEpicMonster(EntityType type){
         List<MonsterBean> epicMonsterList = monsterAction.getMonsterBytype().getOrDefault(type, Collections.emptyList());
-        double probability = random.nextDouble();
-        return epicMonsterList.stream()
-                .filter(monsterBean -> monsterBean.getNaturalSpawn() < probability)
-                .max(Comparator.comparing(MonsterBean::getNaturalSpawn));
+        return fetcher.fetcher(epicMonsterList);
     }
 }

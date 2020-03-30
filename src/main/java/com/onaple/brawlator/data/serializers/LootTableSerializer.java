@@ -2,8 +2,7 @@ package com.onaple.brawlator.data.serializers;
 
 import com.google.common.reflect.TypeToken;
 import com.onaple.brawlator.Brawlator;
-import com.onaple.brawlator.data.beans.LootTable;
-import com.onaple.brawlator.data.handlers.ConfigurationHandler;
+import com.onaple.brawlator.data.beans.table.LootTable;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;

@@ -8,7 +8,9 @@ import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.manipulator.DataManipulatorBuilder;
+import org.spongepowered.api.data.manipulator.immutable.common.AbstractImmutableListData;
 import org.spongepowered.api.data.manipulator.immutable.common.AbstractImmutableSingleData;
+import org.spongepowered.api.data.manipulator.mutable.common.AbstractListData;
 import org.spongepowered.api.data.manipulator.mutable.common.AbstractSingleData;
 import org.spongepowered.api.data.merge.MergeFunction;
 import org.spongepowered.api.data.persistence.AbstractDataBuilder;
@@ -16,19 +18,17 @@ import org.spongepowered.api.data.persistence.InvalidDataException;
 import org.spongepowered.api.data.value.immutable.ImmutableValue;
 import org.spongepowered.api.data.value.mutable.Value;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-public class MonsterLootManipulator extends AbstractSingleData<Loot, MonsterLootManipulator, MonsterLootManipulator.Immutable> {
+public class MonsterLootManipulator extends AbstractListData<Loot, MonsterLootManipulator, MonsterLootManipulator.Immutable> {
 
 
-    protected MonsterLootManipulator(Loot value) {
+    protected MonsterLootManipulator(List<Loot> value) {
         super(value, BrawlatorKeys.LOOT);
     }
 
-    @Override
-    protected Value<Loot> getValueGetter() {
-        return Sponge.getRegistry().getValueFactory().createValue(BrawlatorKeys.LOOT, getValue());
-    }
 
     @Override
     public Optional<MonsterLootManipulator> fill(DataHolder dataHolder, MergeFunction overlap) {
@@ -48,7 +48,7 @@ public class MonsterLootManipulator extends AbstractSingleData<Loot, MonsterLoot
 
     public Optional<MonsterLootManipulator> from(DataView view) {
         if (view.contains(BrawlatorKeys.LOOT.getQuery())) {
-            Optional<Loot> idValue = view.getSerializable(BrawlatorKeys.LOOT.getQuery(),Loot.class);
+            Optional<List<Loot>> idValue = view.getSerializableList(BrawlatorKeys.LOOT.getQuery(),Loot.class);
             idValue.ifPresent(this::setValue);
             return Optional.of(this);
         } else {
@@ -77,17 +77,13 @@ public class MonsterLootManipulator extends AbstractSingleData<Loot, MonsterLoot
                 .set(BrawlatorKeys.LOOT.getQuery(), getValue());
     }
 
-    public static class Immutable extends AbstractImmutableSingleData<Loot, Immutable, MonsterLootManipulator> {
+    public static class Immutable extends AbstractImmutableListData<Loot, Immutable, MonsterLootManipulator> {
 
 
-        protected Immutable(Loot value) {
+        protected Immutable(List<Loot> value) {
             super(value, BrawlatorKeys.LOOT);
         }
 
-        @Override
-        protected ImmutableValue<Loot> getValueGetter() {
-            return Sponge.getRegistry().getValueFactory().createValue(BrawlatorKeys.LOOT, getValue()).asImmutable();
-        }
 
         @Override
         public MonsterLootManipulator asMutable() {
@@ -112,8 +108,7 @@ public class MonsterLootManipulator extends AbstractSingleData<Loot, MonsterLoot
 
         @Override
         public MonsterLootManipulator create() {
-            return new MonsterLootManipulator(Loot.empty());
-        }
+            return new MonsterLootManipulator(new ArrayList<>());}
 
         @Override
         public Optional<MonsterLootManipulator> createFrom(DataHolder dataHolder) {

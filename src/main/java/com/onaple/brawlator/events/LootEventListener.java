@@ -18,21 +18,24 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.extent.Extent;
 
+import java.util.List;
 import java.util.Optional;
 
 public class LootEventListener {
 
     @Listener
     public void onLoot(DropItemEvent.Destruct event, @First Entity entity, @Root EntityDamageSource source){
-        Optional<Loot> arg2 = entity.get(BrawlatorKeys.LOOT);
-        Brawlator.getLogger().info("entity {}, has data {}",entity, arg2);
-        if(arg2.isPresent()){
-            ItemStack fetch = arg2.get().fetch();
+        Optional<List<Loot>> loots = entity.get(BrawlatorKeys.LOOT);
+        Brawlator.getLogger().info("entity {}, has data [{}]",entity, loots);
+        if(loots.isPresent()){
             Location<World> location = entity.getLocation();
             Extent extent = location.getExtent();
-            Entity itemEntity = extent.createEntity(EntityTypes.ITEM, location.getPosition());
-            itemEntity.offer(Keys.REPRESENTED_ITEM, fetch.createSnapshot());
-            event.getEntities().add(itemEntity);
+                loots.get().forEach(loot -> {
+                    ItemStack fetch = loot.fetch();
+                    Entity itemEntity = extent.createEntity(EntityTypes.ITEM, location.getPosition());
+                    itemEntity.offer(Keys.REPRESENTED_ITEM, fetch.createSnapshot());
+                    event.getEntities().add(itemEntity);
+                });
         }
     }
 }

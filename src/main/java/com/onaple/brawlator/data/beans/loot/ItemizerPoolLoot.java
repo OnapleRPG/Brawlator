@@ -13,12 +13,13 @@ import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.util.Optional;
 
-public class ItemizerPoolLoot implements Loot {
+public class ItemizerPoolLoot extends PonderedLoot {
 
     private String poolId;
 
-    public ItemizerPoolLoot(String pooId) {
-        this.poolId = pooId;
+    public ItemizerPoolLoot(double weigth, String poolId) {
+        super(weigth);
+        this.poolId = poolId;
     }
 
     @Override
@@ -44,5 +45,13 @@ public class ItemizerPoolLoot implements Loot {
         return DataContainer.createNew()
                 .set(DataQuery.of("PoolId"), this.poolId)
                 .set(Queries.CONTENT_VERSION, getContentVersion());
+    }
+
+    @Override
+    public String toString() {
+        return "ItemizerPoolLoot{" +
+                "poolId='" + poolId + '\'' +
+                ", weigth=" + weigth +
+                '}';
     }
 }

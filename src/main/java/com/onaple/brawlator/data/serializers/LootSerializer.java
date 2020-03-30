@@ -25,7 +25,7 @@ public class LootSerializer implements TypeSerializer<Loot> {
 
     @Override
     public void serialize(TypeToken<?> type, Loot obj, ConfigurationNode value) throws ObjectMappingException {
-
+    // Maybe I will Implement this one day
     }
 
     @ConfigSerializable
@@ -42,19 +42,21 @@ public class LootSerializer implements TypeSerializer<Loot> {
 
         @Setting
         private String ref;
+        @Setting
+        private double weight;
 
         public Loot toLoot() throws ObjectMappingException {
             if(type != null) {
-                return new ItemTypeLoot(type);
+                return new ItemTypeLoot(weight,type);
             }
             if(stack != null){
-                return new StackLoot(stack);
+                return new StackLoot(weight,stack);
             }
             if(poolId != null){
-                return new ItemizerPoolLoot(poolId);
+                return new ItemizerPoolLoot(weight,poolId);
             }
             if(ref != null){
-                return new ItemizerRefLoot(ref);
+                return new ItemizerRefLoot(weight,ref);
             }
             throw new ObjectMappingException("No Item reference found");
         }

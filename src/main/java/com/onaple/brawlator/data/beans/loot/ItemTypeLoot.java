@@ -1,19 +1,18 @@
 package com.onaple.brawlator.data.beans.loot;
 
 import com.onaple.brawlator.Brawlator;
-import ninja.leaping.configurate.objectmapping.Setting;
-import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.Queries;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
 
-public class ItemTypeLoot implements Loot {
+public class ItemTypeLoot extends PonderedLoot {
 
     ItemType type;
 
-    public ItemTypeLoot(ItemType type) {
+    public ItemTypeLoot(double weigth, ItemType type) {
+        super(weigth);
         this.type = type;
     }
 
@@ -33,5 +32,13 @@ public class ItemTypeLoot implements Loot {
         return DataContainer.createNew()
                 .set(DataQuery.of("type"), this.type)
                 .set(Queries.CONTENT_VERSION, getContentVersion());
+    }
+
+    @Override
+    public String toString() {
+        return "ItemTypeLoot{" +
+                "type=" + type +
+                ", weigth=" + weigth +
+                '}';
     }
 }

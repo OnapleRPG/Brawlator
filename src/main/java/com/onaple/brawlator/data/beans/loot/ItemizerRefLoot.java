@@ -13,11 +13,12 @@ import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.util.Optional;
 
-public class ItemizerRefLoot implements Loot {
+public class ItemizerRefLoot extends PonderedLoot {
 
     private String ref;
 
-    public ItemizerRefLoot(String ref) {
+    public ItemizerRefLoot(double weigth, String ref) {
+        super(weigth);
         this.ref = ref;
     }
 
@@ -47,5 +48,13 @@ public class ItemizerRefLoot implements Loot {
             return DataContainer.createNew()
                     .set(DataQuery.of("ref"), this.ref)
                     .set(Queries.CONTENT_VERSION, getContentVersion());
+    }
+
+    @Override
+    public String toString() {
+        return "ItemizerRefLoot{" +
+                "ref='" + ref + '\'' +
+                ", weigth=" + weigth +
+                '}';
     }
 }

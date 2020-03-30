@@ -2,19 +2,17 @@ package com.onaple.brawlator.data.handlers;
 
 import com.google.common.reflect.TypeToken;
 import com.onaple.brawlator.Brawlator;
-import com.onaple.brawlator.data.beans.LootTable;
+import com.onaple.brawlator.data.beans.GlobalConfig;
+import com.onaple.brawlator.data.beans.table.LootTable;
 import com.onaple.brawlator.data.beans.MonsterBean;
 import com.onaple.brawlator.data.beans.MonsterListBean;
 import com.onaple.brawlator.data.beans.SpawnerTypeBean;
 import com.onaple.brawlator.data.beans.SpawnerTypeListBean;
-import com.onaple.brawlator.data.beans.loot.Loot;
-import com.onaple.brawlator.data.serializers.LootSerializer;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -30,9 +28,6 @@ public class ConfigurationHandler {
         monsterList = new ArrayList<>();
         spawnerTypeList = new ArrayList<>();
     }
-
-
-
 
     private List<LootTable> lootTableList;
     private List<MonsterBean> monsterList;
@@ -55,6 +50,7 @@ public class ConfigurationHandler {
      */
     public int readMonstersConfiguration(CommentedConfigurationNode configurationNode) throws ObjectMappingException {
         monsterList = configurationNode.getValue(MonsterListBean.TYPE).getMonsters();
+        Brawlator.getLogger().info("loaded monster = [{}]",monsterList);
         return monsterList.size();
     }
 
@@ -69,7 +65,19 @@ public class ConfigurationHandler {
 
     public int readLootTableConfiguration(CommentedConfigurationNode configurationNode) throws ObjectMappingException {
         lootTableList = configurationNode.getNode("loots").getList(TypeToken.of(LootTable.class));
+        Brawlator.getLogger().info("loaded loot table = [{}]",lootTableList);
         return lootTableList.size();
+    }
+    public GlobalConfig loadGlobalConfig(String path){
+        try {
+            CommentedConfigurationNode commentedConfigurationNode = loadConfiguration(path, ConfigurationOptions.defaults());
+            GlobalConfig value = commentedConfigurationNode.getValue(TypeToken.of(GlobalConfig.class));
+            Brawlator.getLogger().info("load global config : {}",value);
+            return value;
+        } catch (IOException | ObjectMappingException e) {
+            Brawlator.getLogger().error("Error while reading global configuration", e);
+        }
+        return GlobalConfig.defaultConfig();
     }
 
     /**
