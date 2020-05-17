@@ -2,6 +2,7 @@ package com.onaple.brawlator.commands;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.onaple.brawlator.Brawlator;
+import com.onaple.brawlator.data.beans.MonsterBean;
 import com.onaple.brawlator.exceptions.EntityTypeNotFoundException;
 import com.onaple.brawlator.exceptions.MonsterNotFoundException;
 import org.spongepowered.api.Sponge;
@@ -20,8 +21,8 @@ import java.util.Optional;
 public class InvokeCommand implements CommandExecutor {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Optional<String> monsterName = args.getOne("name");
-        if (!monsterName.isPresent()) {
+        Optional<MonsterBean> monster = args.getOne("monster");
+        if (!monster.isPresent()) {
             src.sendMessage(Text.of("You need to specify a monster name."));
             return CommandResult.empty();
         }
@@ -49,15 +50,8 @@ public class InvokeCommand implements CommandExecutor {
         }
 
         // Invoke monster or handles exception
-        try {
-            Brawlator.getMonsterAction().invokeMonster(location, monsterName.get(), -1);
-        } catch (MonsterNotFoundException e) {
-            src.sendMessage(Text.of("The monster with given name was not found."));
-            return CommandResult.empty();
-        } catch (EntityTypeNotFoundException e) {
-            src.sendMessage(Text.of("The monster type was not found."));
-            return CommandResult.empty();
-        }
+        Brawlator.getMonsterAction().invokeMonster(location, monster.get(), -1);
+
 
         return CommandResult.success();
     }

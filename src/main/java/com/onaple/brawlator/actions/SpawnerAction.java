@@ -96,11 +96,7 @@ public class SpawnerAction {
                 if (((new Date()).getTime() - spawner.getLastSpawn().getTime()) / 1000 >= spawner.getSpawnerType().getRate()) {
                     if (MonsterSpawnedDao.getMonstersBySpawner(spawner.getId()).size() < spawner.getSpawnerType().getQuantityMax()) {
                         // Invoking
-                        try {
-                            Brawlator.getMonsterAction().invokeMonster(spawner.getWorld().getLocation(new Vector3i(spawnX, spawner.getPosition().getY(), spawnZ)), spawner.getMonsterName(), spawner.getId());
-                        } catch (MonsterNotFoundException | EntityTypeNotFoundException e) {
-                            Brawlator.getLogger().error("Error while spawning monster from spawner : " + e.getMessage());
-                        }
+                        Brawlator.getMonsterAction().invokeMonster(spawner.getWorld().getLocation(new Vector3i(spawnX, spawner.getPosition().getY(), spawnZ)), spawner.getMonster(), spawner.getId());
                         spawner.setLastSpawn(new Date());
                     }
                 }

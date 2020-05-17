@@ -29,7 +29,7 @@ public class SpawnerBean {
     /**
      * Monster name, stored in configuration or vanilla one
      */
-    private String monsterName;
+    private MonsterBean monster;
 
     /**
      * World reference set afterwards
@@ -46,19 +46,19 @@ public class SpawnerBean {
      */
     private Date lastSpawn = new Date();
 
-    public SpawnerBean(int id, Vector3i position, String worldName, String spawnerTypeName, String monsterName) {
+    public SpawnerBean(int id, Vector3i position, String worldName, String spawnerTypeName, MonsterBean monster) {
         this.id = id;
         this.position = position;
         this.worldName = worldName;
         this.spawnerTypeName = spawnerTypeName;
-        this.monsterName = monsterName;
+        this.monster = monster;
     }
 
-    public SpawnerBean(Vector3i position, String worldName, String spawnerTypeName, String monsterName) {
+    public SpawnerBean(Vector3i position, String worldName, String spawnerTypeName, MonsterBean monster) {
         this.position = position;
         this.worldName = worldName;
         this.spawnerTypeName = spawnerTypeName;
-        this.monsterName = monsterName;
+        this.monster = monster;
     }
 
     public int getId() {
@@ -89,11 +89,12 @@ public class SpawnerBean {
         this.spawnerTypeName = spawnerTypeName;
     }
 
-    public String getMonsterName() {
-        return monsterName;
+    public MonsterBean getMonster() {
+        return monster;
     }
-    public void setMonsterName(String monsterName) {
-        this.monsterName = monsterName;
+
+    public void setMonster(MonsterBean monster) {
+        this.monster = monster;
     }
 
     public World getWorld() {

@@ -7,7 +7,9 @@ import com.onaple.brawlator.commands.InvokeCommand;
 import com.onaple.brawlator.commands.ViewCommand;
 import com.onaple.brawlator.commands.SpawnerCreateCommand;
 import com.onaple.brawlator.commands.SpawnerDeleteCommand;
-import com.onaple.brawlator.data.MonsterLootManipulator;
+import com.onaple.brawlator.commands.elements.MonsterElement;
+import com.onaple.brawlator.data.manipulators.MonsterExperienceAmountManipulator;
+import com.onaple.brawlator.data.manipulators.MonsterLootManipulator;
 import com.onaple.brawlator.data.beans.GlobalConfig;
 import com.onaple.brawlator.data.beans.table.LootTable;
 import com.onaple.brawlator.data.beans.loot.Loot;
@@ -16,8 +18,9 @@ import com.onaple.brawlator.data.dao.SpawnerDao;
 import com.onaple.brawlator.data.handlers.ConfigurationHandler;
 import com.onaple.brawlator.data.serializers.LootSerializer;
 import com.onaple.brawlator.data.serializers.LootTableSerializer;
-import com.onaple.brawlator.events.LootEventListener;
-import com.onaple.brawlator.events.NaturalSpawnListener;
+import com.onaple.brawlator.Listener.LootEventListener;
+import com.onaple.brawlator.Listener.NaturalSpawnListener;
+import com.onaple.brawlator.events.BrawlatorEntityDiedEvent;
 import com.onaple.brawlator.probability.ProbabilityFetcher;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -30,12 +33,18 @@ import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.data.DataManager;
 import org.spongepowered.api.data.DataRegistration;
+import org.spongepowered.api.data.key.Key;
+import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
+import org.spongepowered.api.event.game.GameRegistryEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
+import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.plugin.PluginManager;
@@ -51,7 +60,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-@Plugin(id = "brawlator", name = "Brawlator", version = "0.1.0")
+@Plugin(id = "brawlator", name = "Brawlator", version = "1.0", description = "Custom monster for more interesting fight",dependencies = {@Dependency(id="itemizer",optional = true)})
 public class Brawlator {
     private static final String BRAWLATOR_PERMISSION = "brawlator.command";
     private static final String SPAWNER_PERMISSION = "brawlator.command.spawner";
@@ -138,14 +147,33 @@ public class Brawlator {
 
     @Listener
     public void preInit(GamePreInitializationEvent e) {
+        Sponge.getEventManager().registerListeners(this, new LootEventListener());
+    }
+
+    @Listener
+    public void onKeyRegistration(GameRegistryEvent.Register<Key<?>> event){
         new BrawlatorKeys();
-        DataRegistration.builder().dataName("Monster loot")
-                .manipulatorId("monster.loot") // prefix is added for you and you can't add it yourself
+        event.register(BrawlatorKeys.LOOT);
+        event.register(BrawlatorKeys.EXPERIENCE);
+    }
+
+    @Listener
+    public void onDataRegistration(GameRegistryEvent.Register<DataRegistration<?, ?>> event) {
+        this.logger.info("onDataRegistration");
+        DataRegistration.builder()
+                .name("Monster loot")
+                .id("monster.loot")
                 .dataClass(MonsterLootManipulator.class)
                 .immutableClass(MonsterLootManipulator.Immutable.class)
                 .builder(new MonsterLootManipulator.Builder())
-                .buildAndRegister(pluginManager.getPlugin("brawlator").get());
-        Sponge.getEventManager().registerListeners(this, new LootEventListener());
+                .build();
+        DataRegistration.builder()
+                .name("Monster experience")
+                .id("monster.xp.amount")
+                .dataClass(MonsterExperienceAmountManipulator.class)
+                .immutableClass(MonsterExperienceAmountManipulator.Immutable.class)
+                .builder(new MonsterExperienceAmountManipulator.Builder())
+                .build();
     }
 
     @Listener
@@ -159,7 +187,7 @@ public class Brawlator {
                 .description(Text.of("Invoke a monster"))
                 .permission(INVOKE_PERMISSION)
                 .arguments(
-                        GenericArguments.onlyOne(GenericArguments.string(Text.of("name"))),
+                        new MonsterElement(Text.of("monster")),
                         GenericArguments.optional(GenericArguments.vector3d(Text.of("position")))
                 )
                 .executor(new InvokeCommand()).build();
@@ -228,6 +256,9 @@ public class Brawlator {
             getLogger().info("Natural spawning disabled, to enable it edit global.conf > enableNaturalSpawning");
         }
         spawnerAction.updateSpawners();
+
+        EventListener<BrawlatorEntityDiedEvent> listener = new MonsterDiedListener();
+        Sponge.getEventManager().registerListener(this, BrawlatorEntityDiedEvent.class, listener);
 
         getLogger().info("BRAWLATOR initialized.");
     }

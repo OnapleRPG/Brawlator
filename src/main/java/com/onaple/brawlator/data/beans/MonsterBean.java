@@ -8,8 +8,6 @@ import org.spongepowered.api.entity.EntityType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 @ConfigSerializable
@@ -54,6 +52,20 @@ public class MonsterBean implements Probable {
 
     @Setting(value = "pools")
     private List<LootTable> lootTable;
+
+    public int getExperience() {
+        return experience;
+    }
+
+    @Setting(value = "experience")
+    private int experience;
+
+    public EquipmentBean getEquipments() {
+        return equipments;
+    }
+
+    @Setting(value = "equipments")
+    private EquipmentBean equipments;
 
 
     public List<LootTable> getLootTable() {
@@ -107,6 +119,8 @@ public class MonsterBean implements Probable {
                 ", knockbackResistance=" + knockbackResistance +
                 ", naturalSpawn=" + naturalSpawn +
                 ", lootTable=" + lootTable +
+                ", experience=" + experience +
+                ", equipments=" + equipments +
                 '}';
     }
 }

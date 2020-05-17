@@ -128,7 +128,7 @@ public class SpawnerDao {
             statement.setInt(3, spawner.getPosition().getZ());
             statement.setString(4, spawner.getWorldName());
             statement.setString(5, spawner.getSpawnerTypeName());
-            statement.setString(6, spawner.getMonsterName());
+            statement.setString(6, spawner.getMonster().getName());
             statement.execute();
             statement.close();
         } catch (ServiceUnavailableException e) {
