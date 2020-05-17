@@ -66,9 +66,9 @@ bintray {
         licenses = ['Apache-2.0']
         vcsUrl = 'git@github.com:OnapleRPG/Brawlator.git'
         version {
-            name = '1.0-SNAPSHOT'
+            name = '1.0'
             released  = new Date()
-            vcsTag = '1.0-SNAPSHOT'
+            vcsTag = '1.0'
         }
     }
 }
