@@ -1,6 +1,5 @@
 package com.onaple.brawlator;
 
-import jdk.dynalink.beans.StaticClass;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.annotation.AnnotationDescription;
@@ -21,7 +20,7 @@ import java.util.function.Consumer;
 @Singleton
 public class SpongeClassGenerator {
 
-    public Object generateDynamicListener(List<ScriptObjectMirror> list) {
+  /*  public Object generateDynamicListener(List<ScriptObjectMirror> list) {
         Object o = null;
         try {
             String name = "DynamicListener" + System.currentTimeMillis();
@@ -78,5 +77,5 @@ public class SpongeClassGenerator {
 
     private <T> T extract(ScriptObjectMirror obj, String key, T def) {
         return obj.hasMember(key) ? (T) obj.get(key) : def;
-    }
+    }*/
 }
