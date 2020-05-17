@@ -78,7 +78,7 @@ publishing {
             from components.java
             groupId 'com.onaple'
             artifactId 'brawlator'
-            version '1.0-SNAPSHOT'
+            version '1.0'
         }
     }
 }
