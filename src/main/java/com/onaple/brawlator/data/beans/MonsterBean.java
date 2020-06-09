@@ -1,13 +1,17 @@
 package com.onaple.brawlator.data.beans;
 
 import com.onaple.brawlator.data.beans.table.LootTable;
+import com.onaple.brawlator.data.manipulators.MonsterAdditionalModifiers;
 import com.onaple.brawlator.probability.Probable;
+import com.onaple.itemizer.data.beans.ItemNbtFactory;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.entity.EntityType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @ConfigSerializable
@@ -53,12 +57,6 @@ public class MonsterBean implements Probable {
     @Setting(value = "pools")
     private List<LootTable> lootTable;
 
-    public int getExperience() {
-        return experience;
-    }
-
-    @Setting(value = "experience")
-    private int experience;
 
     public EquipmentBean getEquipments() {
         return equipments;
@@ -66,6 +64,10 @@ public class MonsterBean implements Probable {
 
     @Setting(value = "equipments")
     private EquipmentBean equipments;
+
+
+    @Setting("additional")
+    private Set<MonsterAdditionalModifiers> thirdParties = new TreeSet<>();
 
 
     public List<LootTable> getLootTable() {
@@ -91,6 +93,9 @@ public class MonsterBean implements Probable {
     public double getSpeed() { return speed; }
     public double getAttackDamage() { return attackDamage; }
     public int getKnockbackResistance() { return knockbackResistance; }
+    public Set<MonsterAdditionalModifiers> getThirdParties() {
+        return thirdParties;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -102,6 +107,9 @@ public class MonsterBean implements Probable {
     public void setSpeed(double speed) { this.speed = speed; }
     public void setAttackDamage(double attackDamage) { this.attackDamage = attackDamage; }
     public void setKnockbackResistance(int knockbackResistance) { this.knockbackResistance = knockbackResistance; }
+    public void setThirdParties(Set<MonsterAdditionalModifiers> thirdParties) {
+        this.thirdParties = thirdParties;
+    }
 
     @Override
     public double getProbability() {
@@ -119,8 +127,8 @@ public class MonsterBean implements Probable {
                 ", knockbackResistance=" + knockbackResistance +
                 ", naturalSpawn=" + naturalSpawn +
                 ", lootTable=" + lootTable +
-                ", experience=" + experience +
                 ", equipments=" + equipments +
+                ", thirdParties=" + thirdParties +
                 '}';
     }
 }

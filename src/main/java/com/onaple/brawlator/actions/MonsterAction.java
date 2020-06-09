@@ -1,8 +1,10 @@
 package com.onaple.brawlator.actions;
 
+import com.google.inject.internal.cglib.core.$AbstractClassGenerator;
 import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.BrawlatorKeys;
 import com.onaple.brawlator.data.beans.EquipmentBean;
+import com.onaple.brawlator.data.manipulators.MonsterAdditionalModifiers;
 import com.onaple.brawlator.data.manipulators.MonsterExperienceAmountManipulator;
 import com.onaple.brawlator.data.manipulators.MonsterLootManipulator;
 import com.onaple.brawlator.data.beans.loot.Loot;
@@ -67,21 +69,24 @@ public class MonsterAction {
         entity.offer(Keys.WALKING_SPEED, monster.getSpeed());
         entity.offer(Keys.ATTACK_DAMAGE, monster.getAttackDamage());
         entity.offer(Keys.KNOCKBACK_STRENGTH, monster.getKnockbackResistance());
-        offerExperience(entity,monster.getExperience());
         applyLoot(entity, monster);
-        entity = applyEquipments(entity,monster.getEquipments());
+        Entity equippedEntity = applyEquipments(entity,monster.getEquipments());
+
+        monster.getThirdParties().forEach(monsterAdditionalModifiers ->
+                monsterAdditionalModifiers.apply(equippedEntity));
+
         return entity;
     }
 
-    private Entity applyEquipments(Entity entity, EquipmentBean equipementBean) {
+    private Entity applyEquipments(Entity entity, EquipmentBean equipmentBean) {
         if (entity instanceof ArmorEquipable) {
             ArmorEquipable equipableEntity = (ArmorEquipable) entity;
-                        equipableEntity.setItemInHand(HandTypes.MAIN_HAND, equipementBean.getMainHand());
-                        equipableEntity.setItemInHand(HandTypes.OFF_HAND, equipementBean.getOffHand());
-                        equipableEntity.setHelmet(equipementBean.getHead());
-                        equipableEntity.setChestplate(equipementBean.getChest());
-                        equipableEntity.setBoots(equipementBean.getFoot());
-                        equipableEntity.setLeggings(equipementBean.getLegs());
+                        equipableEntity.setItemInHand(HandTypes.MAIN_HAND, equipmentBean.getMainHand());
+                        equipableEntity.setItemInHand(HandTypes.OFF_HAND, equipmentBean.getOffHand());
+                        equipableEntity.setHelmet(equipmentBean.getHead());
+                        equipableEntity.setChestplate(equipmentBean.getChest());
+                        equipableEntity.setBoots(equipmentBean.getFoot());
+                        equipableEntity.setLeggings(equipmentBean.getLegs());
             return (Entity) equipableEntity;
         }
         return  entity;

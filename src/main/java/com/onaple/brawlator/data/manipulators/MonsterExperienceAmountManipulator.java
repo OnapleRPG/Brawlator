@@ -23,7 +23,7 @@ import static com.onaple.brawlator.BrawlatorKeys.EXPERIENCE;
 
 public class MonsterExperienceAmountManipulator extends AbstractSingleData<Integer,MonsterExperienceAmountManipulator, MonsterExperienceAmountManipulator.Immutable> {
 
-    protected MonsterExperienceAmountManipulator(Integer value) {
+    public MonsterExperienceAmountManipulator(Integer value) {
         super(EXPERIENCE, value);
     }
 
