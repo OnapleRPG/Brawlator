@@ -3,7 +3,6 @@ package com.onaple.brawlator.data.beans;
 import com.onaple.brawlator.data.beans.table.LootTable;
 import com.onaple.brawlator.data.manipulators.MonsterAdditionalModifiers;
 import com.onaple.brawlator.probability.Probable;
-import com.onaple.itemizer.data.beans.ItemNbtFactory;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.entity.EntityType;
@@ -47,12 +46,8 @@ public class MonsterBean implements Probable {
     @Setting(value="knockbackResistance")
     private int knockbackResistance;
 
-    public void setNaturalSpawn(double naturalSpawn) {
-        this.naturalSpawn = naturalSpawn;
-    }
-
     @Setting(value = "naturalSpawn")
-    private double naturalSpawn;
+    private NaturalSpawnData naturalSpawn;
 
     @Setting(value = "pools")
     private List<LootTable> lootTable;
@@ -113,6 +108,10 @@ public class MonsterBean implements Probable {
 
     @Override
     public double getProbability() {
+        return naturalSpawn.getProbability();
+    }
+
+    public NaturalSpawnData getNaturalSpawn() {
         return naturalSpawn;
     }
 

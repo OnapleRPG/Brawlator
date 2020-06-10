@@ -4,6 +4,7 @@ import com.google.inject.internal.cglib.core.$AbstractClassGenerator;
 import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.BrawlatorKeys;
 import com.onaple.brawlator.data.beans.EquipmentBean;
+import com.onaple.brawlator.data.beans.NaturalSpawnData;
 import com.onaple.brawlator.data.manipulators.MonsterAdditionalModifiers;
 import com.onaple.brawlator.data.manipulators.MonsterExperienceAmountManipulator;
 import com.onaple.brawlator.data.manipulators.MonsterLootManipulator;
@@ -22,13 +23,16 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.biome.BiomeType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -92,18 +96,33 @@ public class MonsterAction {
         return  entity;
     }
 
-    private void offerExperience(Entity entity,int experience){
-        Optional<MonsterExperienceAmountManipulator> experienceAmountManipulator = entity.getOrCreate(MonsterExperienceAmountManipulator.class);
-        if(experienceAmountManipulator.isPresent()){
-            MonsterExperienceAmountManipulator monsterExperienceAmountManipulator = experienceAmountManipulator.get();
-            monsterExperienceAmountManipulator.set(BrawlatorKeys.EXPERIENCE, experience);
-            entity.offer(monsterExperienceAmountManipulator);
-        }
+    public List<MonsterBean> filterMonster(EntityType entityType, BiomeType biome, int currentHeight) {
+        List<MonsterBean> monsters = configurationHandler.getMonsterList();
+        return monsters.stream()
+                .filter(isTypeEquals(entityType))
+                .filter(hasSpawnedInBiome(biome))
+                .filter(hasSpawnedBelow(currentHeight))
+                .collect(Collectors.toList());
     }
 
-    public Map<EntityType, List<MonsterBean>> getMonsterBytype() {
-        List<MonsterBean> monsters = configurationHandler.getMonsterList();
-        return monsters.stream().collect(Collectors.groupingBy(monsterBean -> monsterBean.getType()));
+    private Predicate<MonsterBean> isTypeEquals(EntityType entityType){
+        return m -> m.getType().equals(entityType);
+    }
+    private Predicate<MonsterBean> hasSpawnedInBiome(BiomeType biome){
+         return  m -> {
+             if(Objects.nonNull(m.getNaturalSpawn().getBiomeType())) {
+                 return m.getNaturalSpawn().getBiomeType().equals(biome);
+             }
+             return true;
+         };
+    }
+    private Predicate<MonsterBean> hasSpawnedBelow(int currentHeight){
+       return m -> {
+           if (m.getNaturalSpawn().getMaxHeight() > 0) {
+               return m.getNaturalSpawn().getMaxHeight() >= currentHeight;
+           }
+           return true;
+       };
     }
 
     private Entity applyLoot(Entity entity, MonsterBean monster) {

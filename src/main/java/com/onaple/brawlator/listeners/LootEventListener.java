@@ -1,4 +1,4 @@
-package com.onaple.brawlator.Listener;
+package com.onaple.brawlator.listeners;
 
 import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.BrawlatorKeys;
@@ -11,7 +11,6 @@ import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.cause.entity.damage.source.EntityDamageSource;
-import org.spongepowered.api.event.entity.DamageEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.item.inventory.DropItemEvent;

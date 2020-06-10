@@ -18,8 +18,8 @@ import com.onaple.brawlator.data.dao.SpawnerDao;
 import com.onaple.brawlator.data.handlers.ConfigurationHandler;
 import com.onaple.brawlator.data.serializers.LootSerializer;
 import com.onaple.brawlator.data.serializers.LootTableSerializer;
-import com.onaple.brawlator.Listener.LootEventListener;
-import com.onaple.brawlator.Listener.NaturalSpawnListener;
+import com.onaple.brawlator.listeners.LootEventListener;
+import com.onaple.brawlator.listeners.NaturalSpawnListener;
 import com.onaple.brawlator.events.BrawlatorEntityDiedEvent;
 import com.onaple.brawlator.probability.ProbabilityFetcher;
 import ninja.leaping.configurate.ConfigurationOptions;
@@ -33,10 +33,8 @@ import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.data.DataManager;
 import org.spongepowered.api.data.DataRegistration;
 import org.spongepowered.api.data.key.Key;
-import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
@@ -246,8 +244,8 @@ public class Brawlator {
         Brawlator.globalConfig = getConfigurationHandler().loadGlobalConfig(configDir + "/brawlator/global.conf");
 
         loadLoot();
-        getLogger().info(loadMonsters() + " monsters loaded.");
-        getLogger().info(loadSpawnerTypes() + " spawners types loaded.");
+        getLogger().info("{} monsters loaded.",loadMonsters());
+        getLogger().info("{} spawners types loaded.", loadSpawnerTypes());
 
         if (Brawlator.getGlobalConfig().isEnableNaturalSpawning()) {
             getLogger().info("Enable natural spawning of configured monsters.");
