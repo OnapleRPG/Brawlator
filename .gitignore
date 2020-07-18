@@ -7,3 +7,7 @@ gradle.properties
 version.properties
 classes
 gradlew.bat
+.classpath
+.project
+.settings
+bin

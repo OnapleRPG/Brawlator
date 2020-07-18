@@ -28,7 +28,6 @@ public class ItemizerPoolLoot extends PonderedLoot {
         if (optionalIItemService.isPresent()) {
             IItemService iItemService = optionalIItemService.get();
                 return iItemService.fetch(poolId).orElse(ItemStack.empty());
-
         } else {
             Brawlator.getLogger().error("Itemizer plugin not found");
         }

@@ -50,7 +50,6 @@ public class ConfigurationHandler {
      */
     public int readMonstersConfiguration(CommentedConfigurationNode configurationNode) throws ObjectMappingException {
         monsterList = configurationNode.getValue(MonsterListBean.TYPE).getMonsters();
-        Brawlator.getLogger().info("loaded monster = [{}]",monsterList);
         return monsterList.size();
     }
 
@@ -65,14 +64,12 @@ public class ConfigurationHandler {
 
     public int readLootTableConfiguration(CommentedConfigurationNode configurationNode) throws ObjectMappingException {
         lootTableList = configurationNode.getNode("loots").getList(TypeToken.of(LootTable.class));
-        Brawlator.getLogger().info("loaded loot table = [{}]",lootTableList);
         return lootTableList.size();
     }
     public GlobalConfig loadGlobalConfig(String path){
         try {
             CommentedConfigurationNode commentedConfigurationNode = loadConfiguration(path, ConfigurationOptions.defaults());
             GlobalConfig value = commentedConfigurationNode.getValue(TypeToken.of(GlobalConfig.class));
-            Brawlator.getLogger().info("load global config : {}",value);
             return value;
         } catch (IOException | ObjectMappingException e) {
             Brawlator.getLogger().error("Error while reading global configuration", e);

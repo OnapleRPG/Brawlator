@@ -110,28 +110,26 @@ public class MonsterAction {
         return m -> m.getType().equals(entityType);
     }
     private Predicate<MonsterBean> hasSpawnedInBiome(BiomeType biome){
-         return  m -> {
-             if(Objects.nonNull(m.getNaturalSpawn().getBiomeType())) {
-                 return m.getNaturalSpawn().getBiomeType().equals(biome);
-             }
-             return true;
-         };
+        return  m -> {
+            if(Objects.nonNull(m.getNaturalSpawn().getBiomeType())) {
+                return m.getNaturalSpawn().getBiomeType().equals(biome);
+            }
+            return true;
+        };
     }
     private Predicate<MonsterBean> hasSpawnedBelow(int currentHeight){
-       return m -> {
-           if (m.getNaturalSpawn().getMaxHeight() > 0) {
-               return m.getNaturalSpawn().getMaxHeight() >= currentHeight;
-           }
-           return true;
-       };
+        return m -> {
+            if (m.getNaturalSpawn().getMaxHeight() > 0) {
+                return m.getNaturalSpawn().getMaxHeight() >= currentHeight;
+            }
+            return true;
+        };
     }
 
     private Entity applyLoot(Entity entity, MonsterBean monster) {
         Optional<LootTable> tableOptional = probabilityFetcher.fetcher(monster.getLootTable());
-        Brawlator.getLogger().info("monster loot table {}",tableOptional);
         if (tableOptional.isPresent()) {
             List<Loot> loots = tableOptional.get().fetchLoots(random.nextDouble());
-            Brawlator.getLogger().info("monster loot = [{}]",loots);
             MonsterLootManipulator monsterLootManipulator = entity.getOrCreate(MonsterLootManipulator.class).get();
             entity.offer(monsterLootManipulator);
             entity.offer(BrawlatorKeys.LOOT, loots);

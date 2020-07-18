@@ -30,12 +30,12 @@ targetCompatibility = 1.8
 versioning {
     // required (number)
     major = 1
-    minor = 1
-    patch = 1
+    minor = 2
+    patch = 0
 
 }
 
-version= versioning.name+'-'+versioning.build
+version= versioning.name
 
 
 repositories {
@@ -65,9 +65,9 @@ bintray {
         licenses = ['Apache-2.0']
         vcsUrl = 'git@github.com:OnapleRPG/Brawlator.git'
         version {
-            name = '1.1.1'
+            name = '1.2.0'
             released  = new Date()
-            vcsTag = '1.1.1'
+            vcsTag = '1.2.0'
         }
     }
 }
@@ -77,7 +77,7 @@ publishing {
             from components.java
             groupId 'com.onaple'
             artifactId 'brawlator'
-            version '1.1.1'
+            version '1.2.0'
         }
     }
 }

@@ -32,24 +32,22 @@ public class NaturalSpawnListener {
             return;
         }
 
-       for(int i = 0; i< event.getEntities().size(); i++) {
-           Entity entityToReplace = event.getEntities().get(i);
-           EntityType type = entityToReplace.getType();
-           BiomeType biome = entityToReplace.getLocation().getBiome();
-           int height = entityToReplace.getLocation().getPosition().getFloorY();
+        for(int i = 0; i< event.getEntities().size(); i++) {
+            Entity entityToReplace = event.getEntities().get(i);
+            EntityType type = entityToReplace.getType();
+            BiomeType biome = entityToReplace.getLocation().getBiome();
+            int height = entityToReplace.getLocation().getPosition().getFloorY();
 
-           Optional<MonsterBean> spawnCandidate = getEpicMonster(type,biome,height);
-           if(spawnCandidate.isPresent()) {
-               Location<World> location = entityToReplace.getLocation();
-                  Brawlator.getLogger().info("location biome {} name={}",location.getBiome().getId(),location.getBiome().getName());
-                  Entity  entity = monsterAction.createEntity(location,spawnCandidate.get());
-                  event.getEntities().set(i,entity);
+            Optional<MonsterBean> spawnCandidate = getEpicMonster(type,biome,height);
+            if(spawnCandidate.isPresent()) {
+                Location<World> location = entityToReplace.getLocation();
+                Entity  entity = monsterAction.createEntity(location,spawnCandidate.get());
+                event.getEntities().set(i,entity);
             }
         }
     }
     private Optional<MonsterBean> getEpicMonster(EntityType type, BiomeType biomeType, int height){
         List<MonsterBean> epicMonsterList = monsterAction.filterMonster(type,biomeType,height);
-        Brawlator.getLogger().info("find entity of type={} biome={} height={} and get list of [{}]",type,biomeType,height,epicMonsterList);
         return fetcher.fetcher(epicMonsterList);
     }
 }
