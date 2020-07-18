@@ -1,7 +1,8 @@
-# Brawlator [![Build Status](https://travis-ci.org/OnapleRPG/Brawlator.svg?branch=master)](https://travis-ci.org/OnapleRPG/Brawlator) ![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Brawlator&metric=reliability_rating) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+# Brawlator [ ![Download](https://api.bintray.com/packages/onaplerpg/onaple/Brawlator/images/download.svg) ](https://bintray.com/onaplerpg/onaple/Brawlator/_latestVersion)[![Build Status](https://travis-ci.org/OnapleRPG/Brawlator.svg?branch=master)](https://travis-ci.org/OnapleRPG/Brawlator) ![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Brawlator&metric=reliability_rating) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Introduction
-This is a Sponge Minecraft plugin designed to help you generate custom spawners into your worlds.  
+This is a Sponge Minecraft plugin designed to help you to create epic monster and manage theirs spawn into your worlds.
+Override natural spawning to spawn specific custom monster on specific biome and heigh.
 We use two configuration files (we provide default ones); one for spawner types and one for monsters. 
 When invoking monsters or creating spawners, you will need to use both informations (although monsters can be 
 replaced with vanilla names).
