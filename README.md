@@ -31,6 +31,10 @@ Used to generate custom monsters with special attributes. You can still use vani
 * **pools**: Array of loot pooltables id, from which additionnal loot can come
 * **naturalSpawn**: Natural spawn possibility (*requires more extensive documentation*)
 * **equipments**: Equipments that the monster will held
+* **naturalSpawn**: Used to replace a "natural" monster spawn with that custom monster
+   * **biomeType**: Type of biome when the spawn replacement can happen (like *minecraft:forest*, [see possible biomes](https://minecraft.gamepedia.com/Biome/ID))
+   * **probability**: Chance for every spawn that concerns the same monster **type** in the current **biomeType** to be this custom monster instead. Between 0 and 1 suffixed by "d" (ex: 0.2d).
+   * **maxHeight**: Used to prevent that spawn behaviour to happen above the mentioned height
 
 ### spawners.conf
 Used to set spawner configuration. Each spawner you create must have a monster and a type set.  
