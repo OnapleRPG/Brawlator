@@ -156,7 +156,6 @@ public class Brawlator {
 
     @Listener
     public void onDataRegistration(GameRegistryEvent.Register<DataRegistration<?, ?>> event) {
-        this.logger.info("onDataRegistration");
         DataRegistration.builder()
                 .name("Monster loot")
                 .id("monster.loot")
@@ -242,15 +241,15 @@ public class Brawlator {
         initDefaultConfig("global.conf");
         Brawlator.globalConfig = getConfigurationHandler().loadGlobalConfig(configDir + "/brawlator/global.conf");
 
-        loadLoot();
-        getLogger().info("{} monsters loaded.",loadMonsters());
-        getLogger().info("{} spawners types loaded.", loadSpawnerTypes());
+        getLogger().info("{} loot tables loaded from configuration.", loadLoot());
+        getLogger().info("{} monsters loaded from configuration.", loadMonsters());
+        getLogger().info("{} spawners types loaded from configuration.", loadSpawnerTypes());
 
         if (Brawlator.getGlobalConfig().isEnableNaturalSpawning()) {
-            getLogger().info("Enable natural spawning of configured monsters.");
+            getLogger().info("Enabled natural spawning of configured monsters.");
             Sponge.getEventManager().registerListeners(this, new NaturalSpawnListener(monsterAction,probabilityFetcher));
         } else {
-            getLogger().info("Natural spawning disabled, to enable it edit global.conf > enableNaturalSpawning");
+            getLogger().info("Natural spawning of configured monsters disabled. To enable it edit global.conf > enableNaturalSpawning");
         }
         spawnerAction.updateSpawners();
 

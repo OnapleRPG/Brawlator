@@ -1,12 +1,6 @@
 package com.onaple.brawlator.actions;
 
-import com.google.inject.internal.cglib.core.$AbstractClassGenerator;
-import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.BrawlatorKeys;
-import com.onaple.brawlator.data.beans.EquipmentBean;
-import com.onaple.brawlator.data.beans.NaturalSpawnData;
-import com.onaple.brawlator.data.manipulators.MonsterAdditionalModifiers;
-import com.onaple.brawlator.data.manipulators.MonsterExperienceAmountManipulator;
 import com.onaple.brawlator.data.manipulators.MonsterLootManipulator;
 import com.onaple.brawlator.data.beans.loot.Loot;
 import com.onaple.brawlator.data.beans.table.LootTable;
@@ -27,8 +21,9 @@ import org.spongepowered.api.world.biome.BiomeType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
@@ -110,32 +105,30 @@ public class MonsterAction {
         return m -> m.getType().equals(entityType);
     }
     private Predicate<MonsterBean> hasSpawnedInBiome(BiomeType biome){
-         return  m -> {
-             if(Objects.nonNull(m.getNaturalSpawn().getBiomeType())) {
-                 return m.getNaturalSpawn().getBiomeType().equals(biome);
-             }
-             return true;
-         };
+        return  m -> {
+            if(Objects.nonNull(m.getNaturalSpawn().getBiomeType())) {
+                return m.getNaturalSpawn().getBiomeType().equals(biome);
+            }
+            return true;
+        };
     }
     private Predicate<MonsterBean> hasSpawnedBelow(int currentHeight){
-       return m -> {
-           if (m.getNaturalSpawn().getMaxHeight() > 0) {
-               return m.getNaturalSpawn().getMaxHeight() >= currentHeight;
-           }
-           return true;
-       };
+        return m -> {
+            if (m.getNaturalSpawn().getMaxHeight() > 0) {
+                return m.getNaturalSpawn().getMaxHeight() >= currentHeight;
+            }
+            return true;
+        };
     }
 
     private Entity applyLoot(Entity entity, MonsterBean monster) {
-        Optional<LootTable> tableOptional = probabilityFetcher.fetcher(monster.getLootTable());
-        Brawlator.getLogger().info("monster loot table {}",tableOptional);
-        if (tableOptional.isPresent()) {
-            List<Loot> loots = tableOptional.get().fetchLoots(random.nextDouble());
-            Brawlator.getLogger().info("monster loot = [{}]",loots);
-            MonsterLootManipulator monsterLootManipulator = entity.getOrCreate(MonsterLootManipulator.class).get();
-            entity.offer(monsterLootManipulator);
-            entity.offer(BrawlatorKeys.LOOT, loots);
+        List<Loot> loots = new ArrayList<>();
+        for (LootTable lootTable: monster.getLootTable()) {
+            loots.addAll(lootTable.fetchLoots(random.nextDouble()));
         }
+        MonsterLootManipulator monsterLootManipulator = entity.getOrCreate(MonsterLootManipulator.class).get();
+        entity.offer(monsterLootManipulator);
+        entity.offer(BrawlatorKeys.LOOT, loots);
         return entity;
     }
 }

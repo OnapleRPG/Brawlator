@@ -22,17 +22,32 @@ By default, you will have two configuration files that you can change to match y
 
 ### monsters.conf
 Used to generate custom monsters with special attributes. You can still use vanilla monsters, but the configured one can have improved stats.  
-* **damage**: Damage the monster is able to deal  
+* **damage**: Damage points the monster is able to deal  
 * **hp**: Monster health points  
 * **knockbackResistance**: Monster resistance to knockback  
-* **name**: Name to identify the monster (used when issuing commands)  
+* **name**: Name to identify the monster (used when issuing commands. if you include whitespace, don't forget to wrap it with "" when issuing in-game commands)  
 * **speed**: Monster speed  
 * **type**: Monster base type  
+* **pools**: Array of loot pooltables id, from which additionnal loot can come
+* **naturalSpawn**: Natural spawn possibility (*requires more extensive documentation*)
+* **equipments**: Equipments that the monster will held
 
 ### spawners.conf
 Used to set spawner configuration. Each spawner you create must have a monster and a type set.  
-* **quantityMax**: Max monster count from the spawner
-* **name**: Type name (used when issuing commands)  
+* **quantityMax**: Max simultaneous monster count who can come from that spawner
+* **name**: Spawner type name (used when issuing commands)  
 * **maxSpawnRange**: Max range the monster can spawn around the spawner  
 * **maxRoamRange**: Max range the monster can roam around the spawner without despawning (0 for unlimited) 
 * **rate**: Minimum seconds before the next spawn is allowed  
+
+### loots.conf
+Loot tables to add additionnal loot for custom monsters.  
+* **probability** Probability that the loot table will be triggered, between 0 and 1. If not triggered, none of the loots below can happen
+* **name** Identifier for the loot table
+* **loot** Array with the possible loots
+    * **weight** Probability within the loot table that the given item can drop.  
+    It goes from the first element to the last by increasing the current weight. Exemple:  
+    If we roll a 0.7 and the first weight is 0.5, it is skipped. If the second weight is 0.3, then our roll is matched (0.7 < 0.5 + 0.3) and the second item drops. Therefore items exceeding a total of 1 will never drop.
+    * **type** If you want a standard minecraft item to drop. Specify a string like "minecraft:cobblestone"
+    * **ref** If Itemizer is present on the server, will give an item represented within Itemizer by that ref id
+    * **poolId** If Itemizer is present on the server, will trigger an Itemizer pool and match its result

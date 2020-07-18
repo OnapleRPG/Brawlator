@@ -20,7 +20,7 @@ public class MonsterSpawnedDao {
      * Generate database tables if they do not exist
      */
     public static void createTableIfNotExist() {
-        String query = "CREATE TABLE IF NOT EXISTS monsterSpawned (id INTEGER PRIMARY KEY, spawnerId INTEGER, uuid VARCHAR(50), worldName VARCHAR(50))";
+        String query = "CREATE TABLE IF NOT EXISTS monsterSpawned (spawnerId INTEGER, uuid VARCHAR(50), worldName VARCHAR(50))";
         Connection connection = null;
         PreparedStatement statement = null;
         try {
@@ -84,7 +84,7 @@ public class MonsterSpawnedDao {
     }
 
     public static List<MonsterSpawnedBean> getMonstersSpawned() {
-        String query = "SELECT id, spawnerId, uuid, worldName FROM monsterSpawned";
+        String query = "SELECT spawnerId, uuid, worldName FROM monsterSpawned";
         List<MonsterSpawnedBean> monsters = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -94,9 +94,8 @@ public class MonsterSpawnedDao {
             statement = connection.prepareStatement(query);
             results = statement.executeQuery();
             while (results.next()) {
-                monsters.add(new MonsterSpawnedBean(results.getInt("id"),
-                        results.getInt("spawnerId"), UUID.fromString(results.getString("uuid")),
-                        results.getString("worldName")));
+                monsters.add(new MonsterSpawnedBean(results.getInt("spawnerId"), 
+                UUID.fromString(results.getString("uuid")), results.getString("worldName")));
             }
             statement.close();
         } catch (ServiceUnavailableException e) {
@@ -110,7 +109,7 @@ public class MonsterSpawnedDao {
     }
 
     public static List<MonsterSpawnedBean> getMonstersBySpawner(int spawnerId) {
-        String query = "SELECT id, spawnerId, uuid, worldName FROM monsterSpawned WHERE spawnerId = ?";
+        String query = "SELECT spawnerId, uuid, worldName FROM monsterSpawned WHERE spawnerId = ?";
         List<MonsterSpawnedBean> monsters = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -121,9 +120,8 @@ public class MonsterSpawnedDao {
             statement.setInt(1, spawnerId);
             results = statement.executeQuery();
             while (results.next()) {
-                monsters.add(new MonsterSpawnedBean(results.getInt("id"),
-                        results.getInt("spawnerId"), UUID.fromString(results.getString("uuid")),
-                        results.getString("worldName")));
+                monsters.add(new MonsterSpawnedBean(results.getInt("spawnerId"), 
+                    UUID.fromString(results.getString("uuid")), results.getString("worldName")));
             }
             statement.close();
         } catch (ServiceUnavailableException e) {

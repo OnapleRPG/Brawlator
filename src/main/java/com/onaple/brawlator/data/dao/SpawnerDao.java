@@ -31,7 +31,7 @@ public class SpawnerDao {
      * Generate database tables if they do not exist
      */
     public void createTableIfNotExist() {
-        String query = "CREATE TABLE IF NOT EXISTS spawner (id INTEGER PRIMARY KEY, x INT, y INT, z INT, worldName VARCHAR(50), spawnerTypeName VARCHAR(50), monsterName VARCHAR(50))";
+        String query = "CREATE TABLE IF NOT EXISTS spawner (x INT, y INT, z INT, worldName VARCHAR(50), spawnerTypeName VARCHAR(50), monsterName VARCHAR(50))";
         Connection connection = null;
         PreparedStatement statement = null;
         try {
@@ -53,7 +53,7 @@ public class SpawnerDao {
      * @return List of spawners
      */
     public List<SpawnerBean> getSpawners() {
-        String query = "SELECT id, x, y, z, worldName, spawnerTypeName, monsterName FROM spawner";
+        String query = "SELECT x, y, z, worldName, spawnerTypeName, monsterName FROM spawner";
         List<SpawnerBean> spawners = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -63,8 +63,7 @@ public class SpawnerDao {
             statement = connection.prepareStatement(query);
             results = statement.executeQuery();
             while (results.next()) {
-                spawners.add(spawnerBuilder.buildSpawner(results.getInt("id"),
-                        new Vector3i(results.getInt("x"), results.getInt("y"),
+                spawners.add(spawnerBuilder.buildSpawner(new Vector3i(results.getInt("x"), results.getInt("y"),
                                 results.getInt("z")), results.getString("worldName"),
                         results.getString("spawnerTypeName"), results.getString("monsterName")));
             }
@@ -80,7 +79,7 @@ public class SpawnerDao {
     }
 
     public List<SpawnerBean> getSpawnersAround(Vector3i position) {
-        String query = "SELECT id, x, y, z, worldName, spawnerTypeName, monsterName FROM spawner WHERE x > ? AND x < ? AND y > ? AND y < ? AND z > ? AND z < ?";
+        String query = "SELECT x, y, z, worldName, spawnerTypeName, monsterName FROM spawner WHERE x > ? AND x < ? AND y > ? AND y < ? AND z > ? AND z < ?";
         List<SpawnerBean> spawners = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -96,8 +95,7 @@ public class SpawnerDao {
             statement.setInt(6, position.getZ() + 2);
             results = statement.executeQuery();
             while (results.next()) {
-                spawners.add(spawnerBuilder.buildSpawner(results.getInt("id"),
-                        new Vector3i(results.getInt("x"), results.getInt("y"),
+                spawners.add(spawnerBuilder.buildSpawner(new Vector3i(results.getInt("x"), results.getInt("y"),
                                 results.getInt("z")), results.getString("worldName"),
                         results.getString("spawnerTypeName"), results.getString("monsterName")));
             }
@@ -145,14 +143,16 @@ public class SpawnerDao {
      * @param spawners List of spawners to remove
      */
     public void deleteSpawners(List<SpawnerBean> spawners) {
-        String query = "DELETE FROM spawner WHERE id = ?";
+        String query = "DELETE FROM spawner WHERE x = ? AND y = ? AND z = ?";
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = DatabaseHandler.getDatasource().getConnection();
             for (SpawnerBean spawner : spawners) {
                 statement = connection.prepareStatement(query);
-                statement.setInt(1, spawner.getId());
+                statement.setInt(1, spawner.getPosition().getX());
+                statement.setInt(2, spawner.getPosition().getY());
+                statement.setInt(3, spawner.getPosition().getZ());
                 statement.execute();
                 statement.close();
             }

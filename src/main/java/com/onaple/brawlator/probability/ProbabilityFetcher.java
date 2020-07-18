@@ -21,10 +21,10 @@ public class ProbabilityFetcher {
         Iterator<T> iterator = pool.iterator();
         double accumulatedProbabilities = 0;
         while (iterator.hasNext()) {
-             T current = iterator.next();
+            T current = iterator.next();
             accumulatedProbabilities += current.getProbability();
             if (randomValue <= accumulatedProbabilities) {
-               return Optional.of(current);
+                return Optional.of(current);
             }
         }
         return Optional.empty();

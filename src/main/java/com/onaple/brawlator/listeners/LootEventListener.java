@@ -32,7 +32,6 @@ public class LootEventListener {
             BrawlatorEntityDiedEvent brawlatorEntityDiedEvent = new BrawlatorEntityDiedEvent(event.getCause(), entity, (Player) source.getSource());
             Sponge.getEventManager().post(brawlatorEntityDiedEvent);
             if (!brawlatorEntityDiedEvent.isCancelled()) {
-                Brawlator.getLogger().info("entity {}, has data [{}]", entity, loots);
                 if (loots.isPresent()) {
                     Location<World> location = entity.getLocation();
                     Extent extent = location.getExtent();

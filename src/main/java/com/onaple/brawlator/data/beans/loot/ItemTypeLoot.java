@@ -18,7 +18,6 @@ public class ItemTypeLoot extends PonderedLoot {
 
     @Override
     public ItemStack fetch() {
-        Brawlator.getLogger().info("Item Type = {}", type);
         return ItemStack.builder().itemType(type).build();
     }
 
