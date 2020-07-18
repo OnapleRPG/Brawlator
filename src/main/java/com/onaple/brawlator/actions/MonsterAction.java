@@ -1,12 +1,6 @@
 package com.onaple.brawlator.actions;
 
-import com.google.inject.internal.cglib.core.$AbstractClassGenerator;
-import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.BrawlatorKeys;
-import com.onaple.brawlator.data.beans.EquipmentBean;
-import com.onaple.brawlator.data.beans.NaturalSpawnData;
-import com.onaple.brawlator.data.manipulators.MonsterAdditionalModifiers;
-import com.onaple.brawlator.data.manipulators.MonsterExperienceAmountManipulator;
 import com.onaple.brawlator.data.manipulators.MonsterLootManipulator;
 import com.onaple.brawlator.data.beans.loot.Loot;
 import com.onaple.brawlator.data.beans.table.LootTable;
@@ -27,8 +21,9 @@ import org.spongepowered.api.world.biome.BiomeType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
@@ -127,13 +122,13 @@ public class MonsterAction {
     }
 
     private Entity applyLoot(Entity entity, MonsterBean monster) {
-        Optional<LootTable> tableOptional = probabilityFetcher.fetcher(monster.getLootTable());
-        if (tableOptional.isPresent()) {
-            List<Loot> loots = tableOptional.get().fetchLoots(random.nextDouble());
-            MonsterLootManipulator monsterLootManipulator = entity.getOrCreate(MonsterLootManipulator.class).get();
-            entity.offer(monsterLootManipulator);
-            entity.offer(BrawlatorKeys.LOOT, loots);
+        List<Loot> loots = new ArrayList<>();
+        for (LootTable lootTable: monster.getLootTable()) {
+            loots.addAll(lootTable.fetchLoots(random.nextDouble()));
         }
+        MonsterLootManipulator monsterLootManipulator = entity.getOrCreate(MonsterLootManipulator.class).get();
+        entity.offer(monsterLootManipulator);
+        entity.offer(BrawlatorKeys.LOOT, loots);
         return entity;
     }
 }

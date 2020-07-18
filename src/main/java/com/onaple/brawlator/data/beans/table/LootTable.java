@@ -1,6 +1,5 @@
 package com.onaple.brawlator.data.beans.table;
 
-import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.data.beans.loot.Loot;
 import com.onaple.brawlator.probability.Probable;
 import ninja.leaping.configurate.objectmapping.Setting;
@@ -8,9 +7,7 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @ConfigSerializable
 public class LootTable implements Probable {
@@ -54,12 +51,21 @@ public class LootTable implements Probable {
 
     public List<Loot> fetchLoots(double probability){
         List<Loot> allLoot = new ArrayList<>();
+        float cumuledWeight = 0;
+        List<Loot> returnedLoot = new ArrayList<>();
         allLoot.addAll(getLoot());
+        // Inheritance system is broken (regression)
+        // Keeping it for now to avoid more breaking changes for users
         allLoot.addAll(inherits.stream().map(LootTable::getLoot)
                 .flatMap(loots -> loots.stream()).collect(Collectors.toList()));
-        return allLoot.stream()
-                .filter(loot1 -> loot1.getWeight() > probability)
-                .collect(Collectors.toList());
+        for(Loot loot: allLoot) {
+            cumuledWeight += loot.getWeight();
+            if (probability <= cumuledWeight) {
+                returnedLoot.add(loot);
+                return returnedLoot;
+            }
+        }
+        return returnedLoot;
     }
 
     @Override

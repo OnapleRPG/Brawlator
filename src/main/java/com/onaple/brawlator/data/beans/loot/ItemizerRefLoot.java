@@ -3,8 +3,6 @@ package com.onaple.brawlator.data.beans.loot;
 import com.onaple.brawlator.Brawlator;
 import com.onaple.itemizer.exception.ItemNotPresentException;
 import com.onaple.itemizer.service.IItemService;
-import ninja.leaping.configurate.objectmapping.Setting;
-import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
