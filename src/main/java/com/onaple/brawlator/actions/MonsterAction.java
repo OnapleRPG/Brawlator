@@ -73,28 +73,29 @@ public class MonsterAction {
         entity.offer(Keys.WALKING_SPEED, monster.getSpeed());
         entity.offer(Keys.ATTACK_DAMAGE, monster.getAttackDamage());
         entity.offer(Keys.KNOCKBACK_STRENGTH, monster.getKnockbackResistance());
+
         applyLoot(entity, monster);
-        Entity equippedEntity = applyEquipments(entity,monster.getEquipments());
+
 
         monster.getThirdParties().forEach(monsterAdditionalModifiers ->
-                monsterAdditionalModifiers.apply(equippedEntity));
+                monsterAdditionalModifiers.apply(entity));
+
+        if(Objects.nonNull(monster.getEquipments())) {
+            if (entity instanceof ArmorEquipable) {
+                ArmorEquipable equipableEntity = (ArmorEquipable) entity;
+                equipableEntity.setItemInHand(HandTypes.MAIN_HAND, monster.getEquipments().getMainHand());
+                equipableEntity.setItemInHand(HandTypes.OFF_HAND, monster.getEquipments().getOffHand());
+                equipableEntity.setHelmet(monster.getEquipments().getHead());
+                equipableEntity.setChestplate(monster.getEquipments().getChest());
+                equipableEntity.setBoots(monster.getEquipments().getFoot());
+                equipableEntity.setLeggings(monster.getEquipments().getLegs());
+                return (Entity) equipableEntity;
+            }
+        }
 
         return entity;
     }
 
-    private Entity applyEquipments(Entity entity, EquipmentBean equipmentBean) {
-        if (entity instanceof ArmorEquipable) {
-            ArmorEquipable equipableEntity = (ArmorEquipable) entity;
-                        equipableEntity.setItemInHand(HandTypes.MAIN_HAND, equipmentBean.getMainHand());
-                        equipableEntity.setItemInHand(HandTypes.OFF_HAND, equipmentBean.getOffHand());
-                        equipableEntity.setHelmet(equipmentBean.getHead());
-                        equipableEntity.setChestplate(equipmentBean.getChest());
-                        equipableEntity.setBoots(equipmentBean.getFoot());
-                        equipableEntity.setLeggings(equipmentBean.getLegs());
-            return (Entity) equipableEntity;
-        }
-        return  entity;
-    }
 
     public List<MonsterBean> filterMonster(EntityType entityType, BiomeType biome, int currentHeight) {
         List<MonsterBean> monsters = configurationHandler.getMonsterList();

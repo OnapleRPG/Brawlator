@@ -57,8 +57,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
-@Plugin(id = "brawlator", name = "Brawlator", version = "1.1", description = "Custom monster for more interesting fight",dependencies = {@Dependency(id="itemizer",optional = true)})
+@Plugin(id = "brawlator", name = "Brawlator", version = "1.1.1", description = "Custom monster for more interesting fight",dependencies = {@Dependency(id="itemizer",optional = true)})
 public class Brawlator {
     private static final String BRAWLATOR_PERMISSION = "brawlator.command";
     private static final String SPAWNER_PERMISSION = "brawlator.command.spawner";
