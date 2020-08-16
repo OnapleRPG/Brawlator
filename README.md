@@ -29,7 +29,6 @@ Used to generate custom monsters with special attributes. You can still use vani
 * **speed**: Monster speed  
 * **type**: Monster base type  
 * **pools**: Array of loot pooltables id, from which additionnal loot can come
-* **naturalSpawn**: Natural spawn possibility (*requires more extensive documentation*)
 * **equipments**: Equipments that the monster will held
 * **naturalSpawn**: Used to replace a "natural" monster spawn with that custom monster
    * **biomeType**: Type of biome when the spawn replacement can happen (like *minecraft:forest*, [see possible biomes](https://minecraft.gamepedia.com/Biome/ID))
