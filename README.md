@@ -2,7 +2,7 @@
 
 ## Introduction
 This is a Sponge Minecraft plugin designed to help you to create epic monster and manage theirs spawn into your worlds.
-Override natural spawning to spawn specific custom monster on specific biome and heigh.
+Override natural spawning to spawn specific custom monster on specific biome and height.
 We use two configuration files (we provide default ones); one for spawner types and one for monsters. 
 When invoking monsters or creating spawners, you will need to use both informations (although monsters can be 
 replaced with vanilla names).
