@@ -29,7 +29,7 @@ public class LootEventListener {
         Optional<List<Loot>> loots = entity.get(BrawlatorKeys.LOOT);
 
         if (source.getSource() instanceof Player) {
-            BrawlatorEntityDiedEvent brawlatorEntityDiedEvent = new BrawlatorEntityDiedEvent(event.getCause(), entity, (Player) source.getSource());
+            BrawlatorEntityDiedEvent brawlatorEntityDiedEvent = new BrawlatorEntityDiedEvent( entity, (Player) source.getSource(),event.getCause());
             Sponge.getEventManager().post(brawlatorEntityDiedEvent);
             if (!brawlatorEntityDiedEvent.isCancelled()) {
                 if (loots.isPresent()) {

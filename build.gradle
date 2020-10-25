@@ -2,12 +2,15 @@
 buildscript {
     repositories {
         // Using Bintray repository:
+        jcenter()
         maven { url "http://dl.bintray.com/davideas/maven" }
+
 
     }
     dependencies {
         // Using Bintray repository:
         classpath 'eu.davidea:grabver:1.0.0'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
     }
 }
 plugins {
@@ -16,9 +19,11 @@ plugins {
     id "eu.davidea.grabver" version "0.7.0"
     id "com.jfrog.bintray" version "1.8.1"
     id 'maven-publish'
+    id 'java'
 
 }
 
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.plugin'
@@ -37,7 +42,6 @@ versioning {
 
 version= versioning.name
 
-
 repositories {
     mavenCentral()
         maven { url 'https://jitpack.io' }
@@ -48,10 +52,10 @@ repositories {
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 dependencies {
-    compile 'org.spongepowered:spongeapi:7.2.0'
+    implementation 'org.spongepowered:spongeapi:7.3.0'
     testCompile "junit:junit:4.11"
     implementation 'com.onaple:itemizer:3.3.1'
-    implementation 'net.bytebuddy:byte-buddy:1.10.10'
+    compile 'net.bytebuddy:byte-buddy:1.10.10'
 }
 
 bintray {
@@ -70,6 +74,20 @@ bintray {
             vcsTag = '1.2.0'
         }
     }
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "com.onaple.brawlator.Brawlator"
+    }
+
+    from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {
+        exclude 'META-INF', 'META-INF/**'
+    }
+
+
+
+
 }
 publishing {
     publications {

@@ -13,7 +13,7 @@ public class BrawlatorEntityDiedEvent extends AbstractEvent implements Cancellab
     private final Entity entity;
     private final Player source;
 
-    public BrawlatorEntityDiedEvent(Cause cause, Entity entity, Player source) {
+    public BrawlatorEntityDiedEvent( Entity entity, Player source,Cause cause) {
         this.cause = cause;
         this.entity = entity;
         this.source = source;
@@ -42,6 +42,6 @@ public class BrawlatorEntityDiedEvent extends AbstractEvent implements Cancellab
 
     @Override
     public Cause getCause() {
-        return null;
+        return cause;
     }
 }

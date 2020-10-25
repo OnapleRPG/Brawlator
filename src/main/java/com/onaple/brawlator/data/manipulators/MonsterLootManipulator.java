@@ -20,7 +20,7 @@ public class MonsterLootManipulator extends AbstractListData<Loot, MonsterLootMa
 
 
     protected MonsterLootManipulator(List<Loot> value) {
-        super(value, BrawlatorKeys.LOOT);
+        super(BrawlatorKeys.LOOT,value);
     }
 
 

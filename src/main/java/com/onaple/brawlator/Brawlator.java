@@ -8,6 +8,7 @@ import com.onaple.brawlator.commands.ViewCommand;
 import com.onaple.brawlator.commands.SpawnerCreateCommand;
 import com.onaple.brawlator.commands.SpawnerDeleteCommand;
 import com.onaple.brawlator.commands.elements.MonsterElement;
+import com.onaple.brawlator.data.beans.MonsterBean;
 import com.onaple.brawlator.data.manipulators.MonsterExperienceAmountManipulator;
 import com.onaple.brawlator.data.manipulators.MonsterLootManipulator;
 import com.onaple.brawlator.data.beans.GlobalConfig;
@@ -18,7 +19,9 @@ import com.onaple.brawlator.data.dao.SpawnerDao;
 import com.onaple.brawlator.data.handlers.ConfigurationHandler;
 import com.onaple.brawlator.data.serializers.LootSerializer;
 import com.onaple.brawlator.data.serializers.LootTableSerializer;
+import com.onaple.brawlator.events.DynamicEntityEventGenerator;
 import com.onaple.brawlator.listeners.LootEventListener;
+import com.onaple.brawlator.listeners.MonsterLifeCycleListener;
 import com.onaple.brawlator.listeners.NaturalSpawnListener;
 import com.onaple.brawlator.events.BrawlatorEntityDiedEvent;
 import com.onaple.brawlator.probability.ProbabilityFetcher;
@@ -26,7 +29,6 @@ import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
@@ -50,11 +52,13 @@ import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 
 import javax.inject.Inject;
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 @Plugin(id = "brawlator", name = "Brawlator", version = "1.1.1", description = "Custom monster for more interesting fight",dependencies = {@Dependency(id="itemizer",optional = true)})
@@ -141,10 +145,17 @@ public class Brawlator {
     @Inject
     private ProbabilityFetcher probabilityFetcher;
 
+    @Inject
+    private ScriptManager scriptManager;
+
+    @Inject MonsterLifeCycleListener monsterLifeCycleListener;
+    @Inject private DynamicEntityEventGenerator dynamicEntityDieEventGenerator;
+
 
     @Listener
     public void preInit(GamePreInitializationEvent e) {
         Sponge.getEventManager().registerListeners(this, new LootEventListener());
+        Sponge.getEventManager().registerListeners(this, monsterLifeCycleListener);
     }
 
     @Listener
@@ -173,7 +184,8 @@ public class Brawlator {
     }
 
     @Listener
-    public void onServerStart(GameStartedServerEvent event) {
+    public void onServerStart(GameStartedServerEvent event) throws IllegalAccessException, InstantiationException, IOException, ScriptException {
+
         Brawlator.instance = this;
 
         spawnerDao.createTableIfNotExist();
@@ -245,6 +257,7 @@ public class Brawlator {
         getLogger().info("{} monsters loaded from configuration.", loadMonsters());
         getLogger().info("{} spawners types loaded from configuration.", loadSpawnerTypes());
 
+
         if (Brawlator.getGlobalConfig().isEnableNaturalSpawning()) {
             getLogger().info("Enabled natural spawning of configured monsters.");
             Sponge.getEventManager().registerListeners(this, new NaturalSpawnListener(monsterAction,probabilityFetcher));
@@ -253,9 +266,22 @@ public class Brawlator {
         }
         spawnerAction.updateSpawners();
 
+
         EventListener<BrawlatorEntityDiedEvent> listener = new MonsterDiedListener();
         Sponge.getEventManager().registerListener(this, BrawlatorEntityDiedEvent.class, listener);
 
+
+        configurationHandler.getMonsterList().forEach(monsterBean -> {
+            try {
+                Object monsterEvent = scriptManager.load(monsterBean);
+                getLogger().info("create listener {}",monsterEvent);
+                Sponge.getEventManager().registerListeners(this, monsterEvent);
+            } catch (Exception e) {
+                getLogger().error("error while loading script", e);
+            }
+
+
+        });
         getLogger().info("BRAWLATOR initialized.");
     }
 
@@ -263,9 +289,9 @@ public class Brawlator {
     private int loadMonsters() {
         initDefaultConfig("monsters.conf");
         try {
-            TypeSerializerCollection serializers = TypeSerializers.getDefaultSerializers().newChild();
-            serializers.registerType(TypeToken.of(LootTable.class), new LootTableSerializer());
-            ConfigurationOptions options = ConfigurationOptions.defaults().setSerializers(serializers);
+            TypeSerializerCollection serializers = TypeSerializerCollection.defaults().newChild();
+            serializers.register(TypeToken.of(LootTable.class), new LootTableSerializer());
+            ConfigurationOptions options = ConfigurationOptions.defaults().withSerializers(serializers);
             CommentedConfigurationNode configurationNode = configurationHandler.loadConfiguration(configDir + "/brawlator/monsters.conf",
                     options);
             return configurationHandler.readMonstersConfiguration(configurationNode);
@@ -290,9 +316,9 @@ public class Brawlator {
     private int loadLoot() {
         initDefaultConfig("loot.conf");
         try {
-            TypeSerializerCollection serializers = TypeSerializers.getDefaultSerializers().newChild();
-            serializers.registerType(TypeToken.of(Loot.class), new LootSerializer());
-            ConfigurationOptions options = ConfigurationOptions.defaults().setSerializers(serializers);
+            TypeSerializerCollection serializers = TypeSerializerCollection.defaults().newChild();
+            serializers.register(TypeToken.of(Loot.class), new LootSerializer());
+            ConfigurationOptions options = ConfigurationOptions.defaults().withSerializers(serializers);
             CommentedConfigurationNode configurationNode = configurationHandler.loadConfiguration(configDir + "/brawlator/loot.conf", options);
             return configurationHandler.readLootTableConfiguration(configurationNode);
         } catch (IOException | ObjectMappingException e) {

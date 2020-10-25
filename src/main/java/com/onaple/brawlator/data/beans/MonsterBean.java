@@ -8,7 +8,9 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.entity.EntityType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -64,6 +66,14 @@ public class MonsterBean implements Probable {
     @Setting("additional")
     private Set<MonsterAdditionalModifiers> thirdParties = new TreeSet<>();
 
+    @Setting("scripts")
+    private List<String> scripts;
+
+    private Map<String,Class<?>> events = new HashMap<>();
+
+    public Map<String, Class<?>> getEvents() {
+        return events;
+    }
 
     public List<LootTable> getLootTable() {
         List<LootTable> recursiveTable = new ArrayList<>();
@@ -91,6 +101,9 @@ public class MonsterBean implements Probable {
     public Set<MonsterAdditionalModifiers> getThirdParties() {
         return thirdParties;
     }
+    public List<String> getScripts() {
+        return scripts;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -105,6 +118,9 @@ public class MonsterBean implements Probable {
     public void setThirdParties(Set<MonsterAdditionalModifiers> thirdParties) {
         this.thirdParties = thirdParties;
     }
+    public void setScripts(List<String> scripts) {
+        this.scripts = scripts;
+    }
 
     @Override
     public double getProbability() {
@@ -114,6 +130,8 @@ public class MonsterBean implements Probable {
     public NaturalSpawnData getNaturalSpawn() {
         return naturalSpawn;
     }
+
+
 
     @Override
     public String toString() {
@@ -130,4 +148,5 @@ public class MonsterBean implements Probable {
                 ", thirdParties=" + thirdParties +
                 '}';
     }
+
 }

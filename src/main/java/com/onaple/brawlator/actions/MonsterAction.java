@@ -1,5 +1,6 @@
 package com.onaple.brawlator.actions;
 
+import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.BrawlatorKeys;
 import com.onaple.brawlator.data.manipulators.MonsterLootManipulator;
 import com.onaple.brawlator.data.beans.loot.Loot;
@@ -8,6 +9,7 @@ import com.onaple.brawlator.data.beans.MonsterBean;
 import com.onaple.brawlator.data.beans.MonsterSpawnedBean;
 import com.onaple.brawlator.data.dao.MonsterSpawnedDao;
 import com.onaple.brawlator.data.handlers.ConfigurationHandler;
+import com.onaple.brawlator.exceptions.MonsterNotFoundException;
 import com.onaple.brawlator.probability.ProbabilityFetcher;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
@@ -31,7 +33,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Singleton
-public class MonsterAction {
+public class
+MonsterAction {
 
     private final Random random;
 
@@ -48,6 +51,10 @@ public class MonsterAction {
     public boolean monsterExists(String monsterName) {
         Optional<MonsterBean> monsterOptional = configurationHandler.getMonsterList().stream().filter(m -> m.getName().equalsIgnoreCase(monsterName)).findAny();
         return monsterOptional.isPresent() || Sponge.getRegistry().getType(EntityType.class, monsterName).isPresent();
+    }
+    public MonsterBean getMonster(String monsterName) throws MonsterNotFoundException {
+        Optional<MonsterBean> monsterOptional = configurationHandler.getMonsterList().stream().filter(m -> m.getName().equalsIgnoreCase(monsterName)).findAny();
+       return  monsterOptional.orElseThrow(() -> new MonsterNotFoundException(monsterName));
     }
 
     public void invokeMonster(Location location, MonsterBean monster, int spawnerId) {
@@ -106,6 +113,7 @@ public class MonsterAction {
     }
     private Predicate<MonsterBean> hasSpawnedInBiome(BiomeType biome){
         return  m -> {
+            Brawlator.getLogger().info("configured biome {}",m.getNaturalSpawn().getBiomeType());
             if(Objects.nonNull(m.getNaturalSpawn().getBiomeType())) {
                 return m.getNaturalSpawn().getBiomeType().equals(biome);
             }
