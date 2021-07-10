@@ -1,13 +1,9 @@
 .gradle
 .idea
 build
-gradle
+gradlew.bat
 *.iml
+gradlew.bat
 gradle.properties
 version.properties
-classes
-gradlew.bat
-.classpath
-.project
-.settings
-bin
+/version.properties

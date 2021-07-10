@@ -1,85 +1,45 @@
-
-buildscript {
-    repositories {
-        // Using Bintray repository:
-        maven { url "http://dl.bintray.com/davideas/maven" }
-
-    }
-    dependencies {
-        // Using Bintray repository:
-        classpath 'eu.davidea:grabver:1.0.0'
-    }
-}
 plugins {
+    id 'java'
+    id "org.sonarqube" version "2.8"
+    id "eu.davidea.grabver" version "1.0.0"
     id 'org.spongepowered.plugin' version '0.8.1'
-    id "org.sonarqube" version "2.5"
-    id "eu.davidea.grabver" version "0.7.0"
-    id "com.jfrog.bintray" version "1.8.1"
     id 'maven-publish'
-
 }
 
-apply plugin: 'java'
-apply plugin: 'maven-publish'
+compileJava.options.encoding = 'UTF-8'
+
+sponge {
+    plugin {
+        id = 'brawlator'
+    }
+}
+
+
 apply plugin: 'org.spongepowered.plugin'
-apply plugin: 'eu.davidea.grabver'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-versioning {
-    // required (number)
-    major = 1
-    minor = 2
-    patch = 0
-
-}
-
-version= versioning.name
-
+group = 'com.onaple'
+version = "1.2.0" // Change plugin version here
 
 repositories {
     mavenCentral()
-        maven { url 'https://jitpack.io' }
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://oss.sonatype.org/service/local/staging/deploy/maven2' }
     maven {
-        url  "https://dl.bintray.com/onaplerpg/onaple"
+            name = 'sponge'
+            url = 'https://repo.spongepowered.org/maven'
     }
 }
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
 dependencies {
     compile 'org.spongepowered:spongeapi:7.2.0'
     testCompile "junit:junit:4.11"
-    implementation 'com.onaple:itemizer:3.3.1'
+    implementation 'com.github.onaplerpg:itemizer:3.7.1'
     implementation 'net.bytebuddy:byte-buddy:1.10.10'
-}
-
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_TOKEN')
-    publications = ['MyPublication']
-    pkg {
-        repo = 'onaple'
-        name = 'Brawlator'
-        userOrg = 'onaplerpg'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'git@github.com:OnapleRPG/Brawlator.git'
-        version {
-            name = '1.2.0'
-            released  = new Date()
-            vcsTag = '1.2.0'
-        }
-    }
-}
-publishing {
-    publications {
-        MyPublication(MavenPublication) {
-            from components.java
-            groupId 'com.onaple'
-            artifactId 'brawlator'
-            version '1.2.0'
-        }
-    }
 }
 
 sonarqube {
@@ -87,5 +47,55 @@ sonarqube {
         property "sonar.projectName", "Brawlator"
         property "sonar.organization", "ylinor-github"
         property "sonar.host.url", "https://sonarcloud.io/"
+    }
+}
+jar {
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/OnapleRPG/Brawlator"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            groupId 'com.onaple'
+            artifactId 'brawlator'
+            pom {
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'HBeau'
+                        name = 'Hugo Beaucamps'
+                    }
+                    developer {
+                        id = 'zessirb'
+                        name = 'Olivier Brissez'
+                    }
+                }
+            }
+        }
+    }
+}
+
+allprojects {
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
     }
 }

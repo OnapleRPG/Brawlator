@@ -1,4 +1,4 @@
-# Brawlator [ ![Download](https://api.bintray.com/packages/onaplerpg/onaple/Brawlator/images/download.svg) ](https://bintray.com/onaplerpg/onaple/Brawlator/_latestVersion)[![Build Status](https://travis-ci.org/OnapleRPG/Brawlator.svg?branch=master)](https://travis-ci.org/OnapleRPG/Brawlator) ![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Brawlator&metric=reliability_rating) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+# Brawlator ![Github Action](https://github.com/OnapleRPG/Brawlator/actions/workflows/gradle.yml/badge.svg) ![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=com.onaple%3ABrawlator&metric=reliability_rating) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![sponge version](https://img.shields.io/badge/sponge-7.2.0-blue.svg)](https://www.spongepowered.org/) 
 
 ## Introduction
 This is a Sponge Minecraft plugin designed to help you to create epic monster and manage theirs spawn into your worlds.
