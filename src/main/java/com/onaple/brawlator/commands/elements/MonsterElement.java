@@ -28,7 +28,7 @@ public class MonsterElement extends CommandElement {
                 .stream()
                 .filter(monsterBean -> monsterBean.getName().equalsIgnoreCase(id))
                 .findFirst()
-                .orElseThrow(() -> new ArgumentParseException(Text.of("Id not found"),source.getName(),1));
+                .orElseThrow(() -> new ArgumentParseException(Text.of("Id not found"), id, 1));
     }
 
     @Override
