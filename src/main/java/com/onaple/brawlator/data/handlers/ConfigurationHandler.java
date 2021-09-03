@@ -3,29 +3,39 @@ package com.onaple.brawlator.data.handlers;
 import com.google.common.reflect.TypeToken;
 import com.onaple.brawlator.Brawlator;
 import com.onaple.brawlator.data.beans.GlobalConfig;
-import com.onaple.brawlator.data.beans.loot.Loot;
 import com.onaple.brawlator.data.beans.table.LootTable;
 import com.onaple.brawlator.data.beans.MonsterBean;
 import com.onaple.brawlator.data.beans.MonsterListBean;
 import com.onaple.brawlator.data.beans.SpawnerTypeBean;
 import com.onaple.brawlator.data.beans.SpawnerTypeListBean;
 import com.onaple.brawlator.data.serializers.ClassTypeSerializer;
-import com.onaple.brawlator.data.serializers.LootSerializer;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
+import org.spongepowered.api.config.ConfigDir;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
 @Singleton
 public class ConfigurationHandler {
+
+    @Inject
+    @ConfigDir(sharedRoot = true)
+    private Path configDir;
 
     public ConfigurationHandler() {
         lootTableList = new ArrayList<>();
@@ -93,4 +103,24 @@ public class ConfigurationHandler {
         ConfigurationLoader<CommentedConfigurationNode> configLoader = HoconConfigurationLoader.builder().setPath(Paths.get(configName)).build();
         return configLoader.load(options);
     }
+    public List<String> getMonsterScript(MonsterBean monsterBean){
+       return  monsterBean.getScripts().stream().map(s -> {
+            Path path = configDir.resolve("/brawlator/scripts/").resolve(s);
+            return readfile(path.toString());
+        }).collect(Collectors.toList());
+    }
+     private String readfile(String path){
+         File myObj = new File(path);
+         try (Scanner myReader = new Scanner(myObj)) {
+             StringWriter sw = new StringWriter();
+             while (myReader.hasNextLine()) {
+                 sw.append(myReader.nextLine());
+             }
+             myReader.close();
+             return sw.toString();
+         } catch (FileNotFoundException e) {
+             Brawlator.getLogger().error("error while reading file {}",path,e);
+         }
+         return "";
+     }
 }

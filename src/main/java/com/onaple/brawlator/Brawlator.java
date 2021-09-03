@@ -8,7 +8,6 @@ import com.onaple.brawlator.commands.ViewCommand;
 import com.onaple.brawlator.commands.SpawnerCreateCommand;
 import com.onaple.brawlator.commands.SpawnerDeleteCommand;
 import com.onaple.brawlator.commands.elements.MonsterElement;
-import com.onaple.brawlator.data.beans.MonsterBean;
 import com.onaple.brawlator.data.manipulators.MonsterExperienceAmountManipulator;
 import com.onaple.brawlator.data.manipulators.MonsterLootManipulator;
 import com.onaple.brawlator.data.beans.GlobalConfig;
@@ -19,9 +18,8 @@ import com.onaple.brawlator.data.dao.SpawnerDao;
 import com.onaple.brawlator.data.handlers.ConfigurationHandler;
 import com.onaple.brawlator.data.serializers.LootSerializer;
 import com.onaple.brawlator.data.serializers.LootTableSerializer;
-import com.onaple.brawlator.events.DynamicEntityEventGenerator;
+import com.onaple.brawlator.events.TickEventEmitter;
 import com.onaple.brawlator.listeners.LootEventListener;
-import com.onaple.brawlator.listeners.MonsterLifeCycleListener;
 import com.onaple.brawlator.listeners.NaturalSpawnListener;
 import com.onaple.brawlator.events.BrawlatorEntityDiedEvent;
 import com.onaple.brawlator.probability.ProbabilityFetcher;
@@ -54,11 +52,11 @@ import org.spongepowered.api.text.Text;
 import javax.inject.Inject;
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 @Plugin(id = "brawlator", name = "Brawlator", version = "1.1.1", description = "Custom monster for more interesting fight",dependencies = {@Dependency(id="itemizer",optional = true)})
@@ -106,6 +104,9 @@ public class Brawlator {
     @Inject
     private PluginContainer pluginContainer;
 
+    @Inject
+    private TickEventEmitter tickEventEmitter;
+
 
     private static SpawnerAction spawnerAction;
 
@@ -148,14 +149,10 @@ public class Brawlator {
     @Inject
     private ScriptManager scriptManager;
 
-    @Inject MonsterLifeCycleListener monsterLifeCycleListener;
-    @Inject private DynamicEntityEventGenerator dynamicEntityDieEventGenerator;
-
 
     @Listener
     public void preInit(GamePreInitializationEvent e) {
         Sponge.getEventManager().registerListeners(this, new LootEventListener());
-        Sponge.getEventManager().registerListeners(this, monsterLifeCycleListener);
     }
 
     @Listener
@@ -184,7 +181,7 @@ public class Brawlator {
     }
 
     @Listener
-    public void onServerStart(GameStartedServerEvent event) throws IllegalAccessException, InstantiationException, IOException, ScriptException {
+    public void onServerStart(GameStartedServerEvent event) throws IllegalAccessException, InstantiationException, IOException, ScriptException, NoSuchMethodException, InvocationTargetException {
 
         Brawlator.instance = this;
 
@@ -270,7 +267,7 @@ public class Brawlator {
         EventListener<BrawlatorEntityDiedEvent> listener = new MonsterDiedListener();
         Sponge.getEventManager().registerListener(this, BrawlatorEntityDiedEvent.class, listener);
 
-
+        loadDefaultScripts();
         configurationHandler.getMonsterList().forEach(monsterBean -> {
             try {
                 Object monsterEvent = scriptManager.load(monsterBean);
@@ -279,10 +276,16 @@ public class Brawlator {
             } catch (Exception e) {
                 getLogger().error("error while loading script", e);
             }
-
-
         });
+
+        Sponge.getEventManager().registerListeners(this, scriptManager.AddListener());
+
+        tickEventEmitter.createTask();
         getLogger().info("BRAWLATOR initialized.");
+    }
+
+    private void loadDefaultScripts() {
+        initDefaultConfig("scripts/myfile.js");
     }
 
 
